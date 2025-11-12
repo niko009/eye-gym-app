@@ -1,0 +1,134 @@
+/* exercises.css - Exercise list screen styles */
+
+.exercise-list {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.exercise-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.exercise-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-sm);
+}
+
+.exercise-card {
+    background-color: var(--tg-theme-bg-color);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.exercise-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.exercise-card:active {
+    transform: translateY(0);
+}
+
+.exercise-card.locked {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.exercise-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.exercise-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-sm);
+}
+
+.exercise-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--tg-theme-text-color);
+    margin: 0;
+}
+
+.exercise-premium-badge {
+    background-color: var(--color-premium);
+    color: #000;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: var(--border-radius-sm);
+    white-space: nowrap;
+}
+
+.exercise-description {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+    margin-bottom: var(--spacing-md);
+    line-height: 1.4;
+}
+
+.exercise-meta {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: 14px;
+    color: var(--tg-theme-hint-color);
+}
+
+.exercise-meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.difficulty-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--border-radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.difficulty-beginner {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: var(--color-success);
+}
+
+.difficulty-intermediate {
+    background-color: rgba(255, 152, 0, 0.15);
+    color: var(--color-warning);
+}
+
+/* Completed badge */
+.exercise-completed {
+    color: var(--color-success);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: var(--spacing-sm);
+}
+
+/* Premium unlock message */
+.premium-unlock-message {
+    background-color: rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--color-premium);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin: var(--spacing-md);
+    text-align: center;
+    font-size: 14px;
+    color: var(--tg-theme-text-color);
+}

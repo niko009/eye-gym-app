@@ -90,6 +90,17 @@
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
+### Constitution-derived Requirements (Eye Gym)
+
+- **CR-001**: UI MUST use the Telegram Web App SDK for theming, alerts, and navigation.
+- **CR-002**: The Web App MUST NOT include third-party analytics or telemetry scripts.
+- **CR-003**: Language support MUST be limited to English, Russian, and Romanian; language
+  detection MUST use `WebApp.initDataUnsafe.user.language_code` with English fallback.
+- **CR-004**: Premium flows MUST use user-entered codes for unlocks and MUST navigate to
+  external payment pages via `openLink()`; no in-app payments.
+- **CR-005**: JS bundle size (gzipped) MUST be ≤ 120 KB; implementations MUST avoid
+  external JS dependencies.
+
 *Example of marking unclear requirements:*
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]

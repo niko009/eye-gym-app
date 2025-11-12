@@ -184,6 +184,15 @@ Examples of foundational tasks (adjust based on your project):
 - Core implementation before integration
 - Story complete before moving to next priority
 
+## Constitution-driven constraints (Eye Gym)
+
+- When creating tasks for frontend work, include explicit tasks for: i18n externalization,
+  bundle-size measurement, and a privacy review to ensure no third-party scripts are added.
+- Tasks that introduce assets MUST include an item to inline SVGs or embed base64 audio
+  so runtime does not fetch remote assets.
+- Any task that touches payments or premium gating MUST record how codes are collected and
+  how `openLink()` will be used; do not implement in-app payment mechanics.
+
 ### Parallel Opportunities
 
 - All Setup tasks marked [P] can run in parallel

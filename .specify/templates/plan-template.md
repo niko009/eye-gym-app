@@ -31,7 +31,22 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+This project follows the Eye Gym constitution. Before Phase 0 research may proceed,
+the following checks MUST be performed and documented in the plan:
+
+- Telegram-Native UX: confirm design relies on Telegram WebApp SDK and no custom chrome.
+- Privacy by Design: confirm no telemetry, analytics, or third-party scripts are required.
+- Multilingual Compliance: confirm support plan for English, Russian, Romanian, and
+  that strings will be externalized.
+- Monetization Boundaries: confirm any premium flow uses external links (`openLink()`)
+  and premium codes are entered by the user.
+- Reliability & Simplicity: confirm intended bundle strategy can meet ≤120 KB gzipped and
+  that no external runtime dependencies are required.
+- User Autonomy: confirm opt-in design for reminders and other opt-in features with
+  clear user-facing explanations.
+- Transparency: confirm a Privacy Policy link will be provided in the Web App footer.
+
+Document results under "Constitution Check" in the plan with pass/fail and any waivers.
 
 ## Project Structure
 

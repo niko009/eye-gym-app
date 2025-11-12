@@ -1,0 +1,22 @@
+# Development artifacts
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+
+# Python (for local development server)
+__pycache__/
+*.pyc
+
+# Temporary test files
+test/
+*.test.html
