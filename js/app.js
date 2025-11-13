@@ -6,6 +6,7 @@ import { i18n } from './i18n.js';
 import { storage } from './storage.js';
 import { exerciseManager } from './exercises.js';
 import { sessionController } from './session.js';
+import { settingsController } from './settings.js';
 
 class App {
     constructor() {
@@ -98,6 +99,11 @@ class App {
         document.addEventListener('reload-exercise-list', () => {
             exerciseManager.renderExerciseList();
         });
+
+        // Listen for premium unlock events
+        document.addEventListener('premium-unlocked', () => {
+            exerciseManager.renderExerciseList();
+        });
     }
 
     /**
@@ -119,6 +125,11 @@ class App {
         const screenId = screenMap[screenName];
         if (screenId) {
             document.getElementById(screenId).style.display = 'block';
+            
+            // Initialize settings screen if showing it
+            if (screenName === 'settings') {
+                settingsController.init();
+            }
         }
     }
 

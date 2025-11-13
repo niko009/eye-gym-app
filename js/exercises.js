@@ -129,10 +129,13 @@ class ExerciseManager {
         const difficultyClass = `difficulty-${exercise.difficulty}`;
         const difficultyText = i18n.t(`difficulty_${exercise.difficulty}`);
 
+        // Audio indicator (show if has_audio === true)
+        const audioIndicator = exercise.has_audio ? `<span class="audio-indicator" title="${i18n.t('voice_available_tooltip')}">🔊</span>` : '';
+
         return `
             <div class="exercise-card ${isLocked ? 'locked' : ''}" data-exercise-id="${exercise.id}" data-locked="${isLocked}">
                 <div class="exercise-card-header">
-                    <h3 class="exercise-title">${title}</h3>
+                    <h3 class="exercise-title">${title} ${audioIndicator}</h3>
                     ${exercise.is_premium ? `<span class="exercise-premium-badge">${i18n.t('premium_locked')}</span>` : ''}
                 </div>
                 <p class="exercise-description">${description}</p>

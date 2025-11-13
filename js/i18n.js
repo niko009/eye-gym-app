@@ -1,6 +1,8 @@
 // i18n.js - Internationalization module
 // Loads and manages localized strings from embedded JSON
 
+import { telegram } from './telegram.js';
+
 class I18n {
     constructor() {
         this.currentLocale = 'en';
@@ -14,23 +16,36 @@ class I18n {
     init(languageCode = null) {
         // Determine language from parameter or fallback chain
         let locale = languageCode;
-        
+
         if (!locale) {
             // Try to get from localStorage (user preference)
             locale = this._getSavedLocale();
         }
-        
+
+        // If still not found, try Telegram-provided language code
+        if (!locale) {
+            try {
+                const tgLang = telegram.getLanguageCode();
+                locale = tgLang ? tgLang.split('-')[0] : null;
+            } catch (e) {
+                // ignore and fallback
+            }
+        }
+
         // Validate and fallback to English if unsupported
         if (!this.supportedLocales.includes(locale)) {
             console.log(`Language '${locale}' not supported, falling back to 'en'`);
             locale = 'en';
         }
-        
+
         this.currentLocale = locale;
-        
+
         // Load translations from embedded script tags
         this._loadTranslations(locale);
-        
+
+        // Persist chosen locale to localStorage
+        this.saveLocale(locale);
+
         return locale;
     }
 

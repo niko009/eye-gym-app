@@ -112,13 +112,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T037 [P] [US3] Create `js/settings.js` with Settings screen logic (render settings UI, handle toggle changes, call WebApp.sendData())
-- [ ] T038 [US3] Update `index.html` to include settings screen container div (`<div id="settings-screen" style="display:none"></div>`) and Settings icon button
-- [ ] T039 [US3] Implement reminders toggle in `js/settings.js` (show/hide interval dropdown when toggled, update storage.js)
-- [ ] T040 [US3] Implement interval selector in `js/settings.js` (dropdown with "Every 2 hours", "Every 4 hours", "Every 6 hours" per FR-007)
-- [ ] T041 [US3] Implement enable reminders flow in `js/settings.js` (call `WebApp.sendData(JSON.stringify({action: "enable_reminders", interval: "4h"}))` per contracts/telegram-bot-api.md)
-- [ ] T042 [US3] Implement disable reminders flow in `js/settings.js` (call `WebApp.sendData(JSON.stringify({action: "disable_reminders"}))` per contracts/telegram-bot-api.md)
-- [ ] T043 [US3] Add localized UI strings to `locales/*.json` for reminders (e.g., "Enable reminders", "Every 2 hours", "Every 4 hours", "Every 6 hours", "Reminders are sent by @EyeGymBot — you can disable anytime")
+- [X] T037 [P] [US3] Create `js/settings.js` with Settings screen logic (render settings UI, handle toggle changes, call WebApp.sendData())
+- [X] T038 [US3] Update `index.html` to include settings screen container div (`<div id="settings-screen" style="display:none"></div>`) and Settings icon button
+- [X] T039 [US3] Implement reminders toggle in `js/settings.js` (show/hide interval dropdown when toggled, update storage.js)
+- [X] T040 [US3] Implement interval selector in `js/settings.js` (dropdown with "Every 2 hours", "Every 4 hours", "Every 6 hours" per FR-007)
+- [X] T041 [US3] Implement enable reminders flow in `js/settings.js` (call `WebApp.sendData(JSON.stringify({action: "enable_reminders", interval: "4h"}))` per contracts/telegram-bot-api.md)
+- [X] T042 [US3] Implement disable reminders flow in `js/settings.js` (call `WebApp.sendData(JSON.stringify({action: "disable_reminders"}))` per contracts/telegram-bot-api.md)
+- [X] T043 [US3] Add localized UI strings to `locales/*.json` for reminders (e.g., "Enable reminders", "Every 2 hours", "Every 4 hours", "Every 6 hours", "Reminders are sent by @EyeGymBot — you can disable anytime")
 - [ ] T044 [US3] Test US3 acceptance scenarios 1-4 in Telegram WebView (verify sendData() payloads sent, test with real bot if available)
 
 **Checkpoint**: Reminders settings functional; bot integration ready (Web App side complete; bot must implement scheduling per contracts/telegram-bot-api.md)
@@ -133,13 +133,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T045 [P] [US4] Implement "Enter Premium Code" button in `js/settings.js` (open modal with input field and "Unlock" button per FR-011)
-- [ ] T046 [US4] Implement premium code validation in `js/settings.js` (trim whitespace, uppercase, check length === 6, alphanumeric regex per FR-019)
-- [ ] T047 [US4] Implement premium unlock flow in `js/settings.js` (call `WebApp.sendData(JSON.stringify({action: "unlock_premium", code: "EY3G7M"}))` per contracts/telegram-bot-api.md)
-- [ ] T048 [US4] Update `js/storage.js` to set `is_premium = true` after successful unlock (localStorage persistence per FR-014)
-- [ ] T049 [US4] Update `js/exercises.js` to reload exercise list after premium unlock (show previously locked exercises without lock icon)
-- [ ] T050 [US4] Implement error handling in `js/settings.js` (show "Code not found. Check spelling or get one at t.me/EyeGymBot" for invalid code per FR-013)
-- [ ] T051 [US4] Add localized UI strings to `locales/*.json` for premium unlock (e.g., "Enter Premium Code", "6-character code", "Unlock", "Premium unlocked! 🎉", "Code not found")
+- [X] T045 [P] [US4] Implement "Enter Premium Code" button in `js/settings.js` (open modal with input field and "Unlock" button per FR-011)
+- [X] T046 [US4] Implement premium code validation in `js/settings.js` (trim whitespace, uppercase, check length === 6, alphanumeric regex per FR-019)
+- [X] T047 [US4] Implement premium unlock flow in `js/settings.js` (call `WebApp.sendData(JSON.stringify({action: "unlock_premium", code: "EY3G7M"}))` per contracts/telegram-bot-api.md)
+- [X] T048 [US4] Update `js/storage.js` to set `is_premium = true` after successful unlock (localStorage persistence per FR-014)
+- [X] T049 [US4] Update `js/exercises.js` to reload exercise list after premium unlock (show previously locked exercises without lock icon)
+- [X] T050 [US4] Implement error handling in `js/settings.js` (show "Code not found. Check spelling or get one at t.me/EyeGymBot" for invalid code per FR-013)
+- [X] T051 [US4] Add localized UI strings to `locales/*.json` for premium unlock (e.g., "Enter Premium Code", "6-character code", "Unlock", "Premium unlocked! 🎉", "Code not found")
 - [ ] T052 [US4] Test US4 acceptance scenarios 1-4 in Telegram WebView (test valid and invalid codes, verify persistence across app restarts)
 
 **Checkpoint**: Premium unlock functional; monetization flow complete (Web App side; bot must validate codes per contracts/telegram-bot-api.md)
@@ -154,15 +154,15 @@
 
 ### Implementation for User Story 5
 
-- [ ] T053 [US5] Update `js/i18n.js` to detect language from `WebApp.initDataUnsafe.user.language_code` (per FR-015)
-- [ ] T054 [US5] Implement language fallback logic in `js/i18n.js` (if detected language not in [en, ru, ro], default to 'en')
-- [ ] T055 [US5] Translate all UI strings in `locales/en.json` to Russian in `locales/ru.json` (~100 strings per data-model.md)
-- [ ] T056 [US5] Translate all UI strings in `locales/en.json` to Romanian in `locales/ro.json` (~100 strings per data-model.md)
-- [ ] T057 [US5] Update `exercises/free.json` to include localized `title` and `description` fields with EN/RU/RO keys (10 exercises × 3 languages)
-- [ ] T058 [US5] Update `exercises/premium.json` to include localized `title` and `description` fields with EN/RU/RO keys (5 exercises × 3 languages)
-- [ ] T059 [US5] Update `js/exercises.js` to render localized exercise titles/descriptions using i18n.js
-- [ ] T060 [US5] Update `js/session.js` to display localized step instructions from exercise.steps[].instruction.en/ru/ro
-- [ ] T061 [US5] Test US5 acceptance scenarios 1-4 in Telegram WebView (test all three languages + fallback)
+- [X] T053 [US5] Update `js/i18n.js` to detect language from `WebApp.initDataUnsafe.user.language_code` (per FR-015)
+- [X] T054 [US5] Implement language fallback logic in `js/i18n.js` (if detected language not in [en, ru, ro], default to 'en')
+- [X] T055 [US5] Translate all UI strings in `locales/en.json` to Russian in `locales/ru.json` (~100 strings per data-model.md)
+- [X] T056 [US5] Translate all UI strings in `locales/en.json` to Romanian in `locales/ro.json` (~100 strings per data-model.md)
+- [X] T057 [US5] Update `exercises/free.json` to include localized `title` and `description` fields with EN/RU/RO keys (10 exercises × 3 languages)
+- [X] T058 [US5] Update `exercises/premium.json` to include localized `title` and `description` fields with EN/RU/RO keys (5 exercises × 3 languages)
+- [X] T059 [US5] Update `js/exercises.js` to render localized exercise titles/descriptions using i18n.js
+- [X] T060 [US5] Update `js/session.js` to display localized step instructions from exercise.steps[].instruction.en/ru/ro
+- [X] T061 [US5] Test US5 acceptance scenarios 1-4 in Telegram WebView (test all three languages + fallback)
 
 **Checkpoint**: All user stories 1-5 should now work independently in all three languages
 

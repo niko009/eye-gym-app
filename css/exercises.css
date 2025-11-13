@@ -62,6 +62,13 @@
     margin: 0;
 }
 
+.audio-indicator {
+    margin-left: 8px;
+    font-size: 14px;
+    vertical-align: middle;
+    opacity: 0.95;
+}
+
 .exercise-premium-badge {
     background-color: var(--color-premium);
     color: #000;
