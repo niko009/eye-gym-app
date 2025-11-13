@@ -46,7 +46,7 @@
       }
     ],
     "is_premium": false,
-    "has_audio": false,
+    "has_audio": true,
     "tags": ["quick", "focus"]
   },
   {

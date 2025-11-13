@@ -83,6 +83,15 @@ class App {
                 this._showScreen('settings');
             });
         }
+
+        // Privacy link in footer - open privacy page in Telegram browser
+        const privacyLink = document.getElementById('privacy-link');
+        if (privacyLink) {
+            privacyLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                telegram.openLink('privacy/index.html');
+            });
+        }
     }
 
     /**
@@ -139,9 +148,15 @@ class App {
     async _loadExerciseList() {
         const listContainer = document.getElementById('exercise-list');
         const titleElement = document.getElementById('app-title');
+        const privacyLink = document.getElementById('privacy-link');
         
         if (titleElement) {
             titleElement.textContent = i18n.t('exercise_list_title');
+        }
+
+        // Localize footer privacy link text when available
+        if (privacyLink) {
+            privacyLink.textContent = i18n.t('privacy_policy');
         }
 
         if (listContainer) {

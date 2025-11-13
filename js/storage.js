@@ -12,7 +12,8 @@ const DEFAULT_PREFERENCES = {
     completed_exercises: [],
     reminder_enabled: false,
     reminder_interval: '4h', // Default: every 4 hours
-    voice_guidance_enabled: true
+    voice_guidance_enabled: true,
+    muted: false
 };
 
 class Storage {
@@ -132,6 +133,20 @@ class Storage {
      */
     isVoiceGuidanceEnabled() {
         return this.get('voice_guidance_enabled') === true;
+    }
+
+    /**
+     * Get global mute setting
+     */
+    isMuted() {
+        return this.get('muted') === true;
+    }
+
+    /**
+     * Set global mute
+     */
+    setMuted(value) {
+        return this.set('muted', value === true);
     }
 
     /**

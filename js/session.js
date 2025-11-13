@@ -36,8 +36,9 @@ class SessionController {
         // Render session UI
         this._renderSession();
 
-        // Start first step
-        this._startStep(0);
+    // Preload audio for first step (if available) and start first step
+    this._prepareAudioForStep(0);
+    this._startStep(0);
 
         console.log('Session started:', exercise.id);
     }
@@ -171,7 +172,7 @@ class SessionController {
         this._displayStep(stepIndex);
 
         // Play audio if enabled and available
-        this._playStepAudio(step);
+    this._playStepAudio(step);
 
         // Start timer
         this._startTimer();
@@ -249,6 +250,11 @@ class SessionController {
             return;
         }
 
+        // Global mute check
+        if (storage.isMuted()) {
+            return;
+        }
+
         // Check if step has audio
         if (!step.audio_base64) {
             return;
@@ -257,10 +263,53 @@ class SessionController {
         try {
             this._stopAudio(); // Stop any currently playing audio
 
-            this.audioElement = new Audio(step.audio_base64);
-            this.audioElement.play();
+            // Create audio element if not preloaded
+            try {
+                this.audioElement = new Audio(step.audio_base64);
+            } catch (err) {
+                console.error('Error creating audio element:', err);
+                this._markAudioUnavailable();
+                return;
+            }
+
+            // Play returns a promise in modern browsers
+            const playPromise = this.audioElement.play();
+            if (playPromise && playPromise.catch) {
+                playPromise.catch(err => {
+                    console.warn('Audio playback failed:', err);
+                    this._markAudioUnavailable();
+                });
+            }
         } catch (error) {
             console.error('Error playing audio:', error);
+            this._markAudioUnavailable();
+        }
+    }
+
+    /**
+     * Prepare audio for a specific step (preload first step on session start)
+     */
+    _prepareAudioForStep(stepIndex) {
+        const step = this.currentExercise.steps[stepIndex];
+        if (!step || !step.audio_base64) return;
+
+        try {
+            // Create and load audio in the background
+            const pre = new Audio(step.audio_base64);
+            // Attempt to load by setting preload and calling load()
+            pre.preload = 'auto';
+            try { pre.load(); } catch (e) { /* ignore */ }
+            // Store temporary reference so GC doesn't drop it immediately
+            this._preloadedAudio = pre;
+        } catch (err) {
+            console.warn('Preload failed:', err);
+        }
+    }
+
+    _markAudioUnavailable() {
+        const instructionElement = document.querySelector('.session-instruction');
+        if (instructionElement) {
+            instructionElement.title = i18n.t('audio_unavailable');
         }
     }
 

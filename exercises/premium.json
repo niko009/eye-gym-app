@@ -76,7 +76,7 @@
       }
     ],
     "is_premium": true,
-    "has_audio": false,
+    "has_audio": true,
     "tags": ["advanced", "near-vision", "strength"]
   },
   {

@@ -176,10 +176,10 @@
 
 ### Implementation for User Story 6
 
-- [ ] T062 [US6] Update `privacy.html` with full privacy policy text (include statement: "Eye Gym Web App stores your progress and settings only on this device. We do not track, log, or share your activity." per FR-017)
-- [ ] T063 [US6] Add "Privacy Policy" link in `js/settings.js` footer (call `WebApp.openLink('privacy.html')` per contracts/telegram-bot-api.md)
-- [ ] T064 [US6] Add localized UI strings to `locales/*.json` for privacy policy link (e.g., "Privacy Policy")
-- [ ] T065 [US6] Test US6 acceptance scenarios 1-2 in Telegram WebView (verify link opens privacy.html in Telegram browser)
+ - [X] T062 [US6] Update `privacy.html` with full privacy policy text (include statement: "Eye Gym Web App stores your progress and settings only on this device. We do not track, log, or share your activity." per FR-017)
+ - [X] T063 [US6] Add "Privacy Policy" link in `js/settings.js` footer (call `WebApp.openLink('privacy.html')` per contracts/telegram-bot-api.md)
+ - [X] T064 [US6] Add localized UI strings to `locales/*.json` for privacy policy link (e.g., "Privacy Policy")
+ - [X] T065 [US6] Test US6 acceptance scenarios 1-2 in Telegram WebView (verify link opens privacy.html in Telegram browser)
 
 **Checkpoint**: All 6 user stories should now be independently functional
 

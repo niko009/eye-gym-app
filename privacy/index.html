@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Privacy Policy — Eye Gym</title>
+    <!-- Telegram SDK allowed by constitution -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; margin: 0; padding: 24px; color: #111; background: #fff; }
+        .container { max-width: 680px; margin: 0 auto; }
+        h1 { font-size: 20px; margin-bottom: 12px; }
+        p { font-size: 16px; line-height: 1.45; color: #222; }
+        .note { margin-top: 16px; color: #666; font-size: 14px; }
+        .close { margin-top: 22px; display:inline-block; padding:8px 12px; background:#eee; border-radius:6px; text-decoration:none; color:#111; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="pp-title">Privacy Policy</h1>
+        <p id="pp-body">Loading...</p>
+        <p class="note" id="pp-note">No external tracking. Offline by design.</p>
+        <a href="#" id="pp-close" class="close">Close</a>
+    </div>
+
+    <script>
+        // Minimal locale map (EN / RU / RO)
+        const LOCALES = {
+            en: {
+                title: 'Privacy Policy',
+                body: 'Eye Gym Web App stores your progress and settings only on this device. We do not track, log, or share your activity.',
+                note: 'This page is served locally and contains no tracking.'
+            },
+            ru: {
+                title: 'Политика конфиденциальности',
+                body: 'Веб-приложение Eye Gym сохраняет ваш прогресс и настройки только на этом устройстве. Мы не отслеживаем, не записываем и не передаём вашу активность.',
+                note: 'Эта страница доступна локально и не содержит отслеживания.'
+            },
+            ro: {
+                title: 'Politica de confidențialitate',
+                body: 'Aplicația web Eye Gym stochează progresul și setările doar pe acest dispozitiv. Nu colectăm, nu înregistrăm și nu partajăm activitatea dvs.',
+                note: 'Această pagină este servită local și nu conține urmărire.'
+            }
+        };
+
+        // Detect language using Telegram initDataUnsafe when available, else browser
+        function detectLocale() {
+            try {
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                    const code = Telegram.WebApp.initDataUnsafe.user.language_code || 'en';
+                    return code.split('-')[0];
+                }
+            } catch (e) {
+                // ignore
+            }
+
+            const nav = navigator.language || navigator.userLanguage || 'en';
+            return nav.split('-')[0];
+        }
+
+        (function () {
+            const raw = detectLocale();
+            const supported = ['en','ru','ro'];
+            const locale = supported.includes(raw) ? raw : 'en';
+
+            const strings = LOCALES[locale];
+            document.getElementById('pp-title').textContent = strings.title;
+            document.getElementById('pp-body').textContent = strings.body;
+            document.getElementById('pp-note').textContent = strings.note;
+
+            // Close button should use Telegram.openLink if available to open within the app
+            const close = document.getElementById('pp-close');
+            close.addEventListener('click', (e) => {
+                e.preventDefault();
+                try {
+                    if (window.Telegram && Telegram.WebApp) {
+                        Telegram.WebApp.close();
+                    } else {
+                        window.close();
+                    }
+                } catch (err) {
+                    window.close();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

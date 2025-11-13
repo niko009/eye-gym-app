@@ -78,6 +78,13 @@ class SettingsController {
               <span>${i18n.t('voice_guidance')}</span>
             </label>
           </div>
+
+          <div class="settings-item">
+            <label class="settings-label">
+              <input type="checkbox" id="mute-toggle" ${preferences.muted ? 'checked' : ''} />
+              <span>${i18n.t('mute_audio')}</span>
+            </label>
+          </div>
         </div>
         
         <!-- Premium Section -->
@@ -142,6 +149,15 @@ class SettingsController {
     this.voiceGuidanceToggle = document.getElementById('voice-guidance-toggle');
     if (this.voiceGuidanceToggle) {
       this.voiceGuidanceToggle.addEventListener('change', () => this.handleVoiceGuidanceToggle());
+    }
+
+    // Mute toggle
+    this.muteToggle = document.getElementById('mute-toggle');
+    if (this.muteToggle) {
+      this.muteToggle.addEventListener('change', () => {
+        const muted = this.muteToggle.checked;
+        storage.setMuted(muted);
+      });
     }
 
     // Premium code button
