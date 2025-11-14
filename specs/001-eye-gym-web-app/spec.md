@@ -162,6 +162,8 @@ As a privacy-conscious user, I access the Privacy Policy from the Settings scree
 - **CR-004**: Premium flows MUST use user-entered codes for unlocks and MUST navigate to external payment pages via `openLink()`; no in-app payments.
 - **CR-005**: JS bundle size (gzipped) MUST be ≤ 120 KB; implementations MUST avoid external JS dependencies.
 
+- **CR-006**: Voice guidance uses embedded audio for core phrases + the Web Speech API for scalability — zero network requests by default; the system is designed to work offline and without external speech services.
+
 ### Key Entities
 
 - **Exercise**: Represents a single guided eye exercise. Attributes: unique ID, title (localized), description (localized), duration (in seconds), difficulty level (beginner/intermediate), steps (array of instruction objects), premium flag (boolean), audio guidance available (boolean).

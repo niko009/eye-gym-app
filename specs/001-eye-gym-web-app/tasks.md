@@ -207,11 +207,11 @@
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] T074 [P] Apply Telegram theme colors in `css/main.css` (read `WebApp.themeParams.bg_color`, `text_color`, etc., set CSS variables per research.md)
-- [ ] T075 [P] Implement CSP enforcement in `index.html` meta tag (per research.md: `default-src 'self'; script-src 'self' https://telegram.org; style-src 'self' 'unsafe-inline'`)
+ - [X] T075 [P] Implement CSP enforcement in `index.html` meta tag (per research.md: `default-src 'self'; script-src 'self' https://telegram.org; style-src 'self' 'unsafe-inline'`)
 - [ ] T076 [P] Add inline SVG icons to `assets/icons/` for UI elements (settings gear, lock icon, play/pause, etc.)
 - [ ] T077 [P] Update all UI to use inline SVG icons instead of text symbols (e.g., ⚙️ → SVG gear icon)
-- [ ] T078 Optimize bundle size (minify JSON if needed, compress audio, validate total ≤120 KB gzipped per quickstart.md)
-- [ ] T079 Run bundle size validation per quickstart.md (`tar -czf bundle.tar.gz ...`, verify ≤120 KB)
+ - [X] T078 Optimize bundle size (minify JSON if needed, compress audio, validate total ≤120 KB gzipped per quickstart.md)
+ - [X] T079 Run bundle size validation per quickstart.md (`tar -czf bundle.tar.gz ...`, verify ≤120 KB)
 - [ ] T080 [P] Add error handling for edge cases (offline premium unlock per edge cases in spec.md, bot blocked warning for reminders)
 - [ ] T081 [P] Improve mobile UX (touch-friendly button sizes, responsive layout, test on iOS and Android per quickstart.md)
 - [ ] T082 Run constitution compliance checklist (verify all 7 principles satisfied per constitution.md)

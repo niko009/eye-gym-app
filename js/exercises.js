@@ -72,7 +72,7 @@ class ExerciseManager {
 
         const { free, premium } = this.getVisibleExercises();
         const isPremium = storage.isPremium();
-        const lang = i18n.getLocale();
+    const lang = i18n.getLocale();
 
         let html = '';
 
@@ -132,10 +132,14 @@ class ExerciseManager {
         // Audio indicator (show if has_audio === true)
         const audioIndicator = exercise.has_audio ? `<span class="audio-indicator" title="${i18n.t('voice_available_tooltip')}">🔊</span>` : '';
 
+        // Determine if we should show audio indicator: embedded audio OR speechSynthesis available and user allows voice guidance
+        const showAudioIndicator = exercise.has_audio || (typeof window !== 'undefined' && 'speechSynthesis' in window && storage.isVoiceGuidanceEnabled());
+        const finalAudioIndicator = showAudioIndicator ? `<span class="audio-indicator" title="${i18n.t('voice_available_tooltip')}">🔊</span>` : '';
+
         return `
             <div class="exercise-card ${isLocked ? 'locked' : ''}" data-exercise-id="${exercise.id}" data-locked="${isLocked}">
                 <div class="exercise-card-header">
-                    <h3 class="exercise-title">${title} ${audioIndicator}</h3>
+                    <h3 class="exercise-title">${title} ${finalAudioIndicator}</h3>
                     ${exercise.is_premium ? `<span class="exercise-premium-badge">${i18n.t('premium_locked')}</span>` : ''}
                 </div>
                 <p class="exercise-description">${description}</p>

@@ -14,6 +14,10 @@ class SessionController {
         this.timer = null;
         this.remainingSeconds = 0;
         this.audioElement = null;
+        // phrases manifest (deduplicated short audio clips)
+        this.phrases = null; // map id -> phrase object
+        this._phrasesLoaded = false;
+        this._phrasesLoadingPromise = null;
     }
 
     /**
@@ -244,7 +248,7 @@ class SessionController {
     /**
      * Play step audio if available and voice guidance enabled
      */
-    _playStepAudio(step) {
+    async _playStepAudio(step) {
         // Check if voice guidance is enabled
         if (!storage.isVoiceGuidanceEnabled()) {
             return;
@@ -256,34 +260,80 @@ class SessionController {
         }
 
         // Check if step has audio
-        if (!step.audio_base64) {
-            return;
-        }
-
-        try {
-            this._stopAudio(); // Stop any currently playing audio
-
-            // Create audio element if not preloaded
+        // Prefer embedded audio if present
+        if (step.audio_base64) {
             try {
-                this.audioElement = new Audio(step.audio_base64);
-            } catch (err) {
-                console.error('Error creating audio element:', err);
+                this._stopAudio(); // Stop any currently playing audio or speech
+
+                // Create audio element if not preloaded
+                try {
+                    this.audioElement = new Audio(step.audio_base64);
+                } catch (err) {
+                    console.error('Error creating audio element:', err);
+                    this._markAudioUnavailable();
+                    return;
+                }
+
+                // Play returns a promise in modern browsers
+                const playPromise = this.audioElement.play();
+                if (playPromise && playPromise.catch) {
+                    playPromise.catch(err => {
+                        console.warn('Audio playback failed:', err);
+                        this._markAudioUnavailable();
+                    });
+                }
+                return; // done
+            } catch (error) {
+                console.error('Error playing audio:', error);
                 this._markAudioUnavailable();
                 return;
             }
-
-            // Play returns a promise in modern browsers
-            const playPromise = this.audioElement.play();
-            if (playPromise && playPromise.catch) {
-                playPromise.catch(err => {
-                    console.warn('Audio playback failed:', err);
-                    this._markAudioUnavailable();
-                });
-            }
-        } catch (error) {
-            console.error('Error playing audio:', error);
-            this._markAudioUnavailable();
         }
+
+        // Next prefer audio_phrase_id -> phrases manifest (locale-aware)
+        if (step.audio_phrase_id) {
+            try {
+                await this._ensurePhrasesLoaded();
+                const lang = i18n.getLocale();
+                const phrase = this.phrases && this.phrases[step.audio_phrase_id];
+                const audioSrc = phrase && phrase.audio && (phrase.audio[lang] || phrase.audio.en);
+                if (audioSrc) {
+                    this._stopAudio();
+                    try {
+                        this.audioElement = new Audio(audioSrc);
+                    } catch (err) {
+                        console.error('Error creating audio element from phrase:', err);
+                        this._markAudioUnavailable();
+                        return;
+                    }
+                    const playPromise2 = this.audioElement.play();
+                    if (playPromise2 && playPromise2.catch) {
+                        playPromise2.catch(err => {
+                            console.warn('Phrase audio playback failed:', err);
+                            this._markAudioUnavailable();
+                        });
+                    }
+                    return;
+                }
+            } catch (err) {
+                console.warn('Error loading phrases manifest:', err);
+                // fallthrough to speechSynthesis fallback
+            }
+        }
+
+        // Fallback: use Web Speech API if available
+        if ('speechSynthesis' in window) {
+            const lang = i18n.getLocale();
+            const instruction = step.instruction[lang] || step.instruction.en || '';
+            if (instruction) {
+                this._stopAudio();
+                this._speakInstruction(instruction, lang);
+                return;
+            }
+        }
+
+        // No audio available
+        this._markAudioUnavailable();
     }
 
     /**
@@ -291,19 +341,65 @@ class SessionController {
      */
     _prepareAudioForStep(stepIndex) {
         const step = this.currentExercise.steps[stepIndex];
-        if (!step || !step.audio_base64) return;
+        if (!step) return;
 
-        try {
-            // Create and load audio in the background
-            const pre = new Audio(step.audio_base64);
-            // Attempt to load by setting preload and calling load()
-            pre.preload = 'auto';
-            try { pre.load(); } catch (e) { /* ignore */ }
-            // Store temporary reference so GC doesn't drop it immediately
-            this._preloadedAudio = pre;
-        } catch (err) {
-            console.warn('Preload failed:', err);
+        // If embedded audio present, preload it
+        if (step.audio_base64) {
+            try {
+                const pre = new Audio(step.audio_base64);
+                pre.preload = 'auto';
+                try { pre.load(); } catch (e) { /* ignore */ }
+                this._preloadedAudio = pre;
+                return;
+            } catch (err) {
+                console.warn('Preload failed:', err);
+            }
         }
+
+        // If phrase id present, attempt to preload phrase audio (async)
+        if (step.audio_phrase_id) {
+            // start loading manifest and preload audio if available
+            this._ensurePhrasesLoaded().then(() => {
+                try {
+                    const lang = i18n.getLocale();
+                    const phrase = this.phrases && this.phrases[step.audio_phrase_id];
+                    const audioSrc = phrase && phrase.audio && (phrase.audio[lang] || phrase.audio.en);
+                    if (audioSrc) {
+                        const pre = new Audio(audioSrc);
+                        pre.preload = 'auto';
+                        try { pre.load(); } catch (e) { /* ignore */ }
+                        this._preloadedAudio = pre;
+                    }
+                } catch (err) {
+                    // swallow preload errors
+                }
+            }).catch(() => {/* ignore manifest load errors */});
+        }
+    }
+
+    /**
+     * Ensure phrases manifest is loaded and mapped
+     */
+    _ensurePhrasesLoaded() {
+        if (this._phrasesLoaded) return Promise.resolve();
+        if (this._phrasesLoadingPromise) return this._phrasesLoadingPromise;
+
+        // Fetch the shared phrases manifest from the static path
+        this._phrasesLoadingPromise = fetch('exercises/phrases.json', {cache: 'no-cache'})
+            .then(res => res.ok ? res.json() : Promise.reject(new Error('Failed to load phrases')))
+            .then(arr => {
+                this.phrases = {};
+                if (Array.isArray(arr)) {
+                    arr.forEach(p => { if (p && p.id) this.phrases[p.id] = p; });
+                }
+                this._phrasesLoaded = true;
+            }).catch(err => {
+                console.warn('Phrases manifest load error:', err);
+                this.phrases = {};
+                this._phrasesLoaded = true; // mark as loaded to avoid retry storms
+            });
+
+        return this._phrasesLoadingPromise;
     }
 
     _markAudioUnavailable() {
@@ -321,6 +417,38 @@ class SessionController {
             this.audioElement.pause();
             this.audioElement.currentTime = 0;
             this.audioElement = null;
+        }
+        // Stop any speech synthesis as well
+        try {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        } catch (err) {
+            // ignore
+        }
+    }
+
+    /**
+     * Speak instruction using Web Speech API
+     */
+    _speakInstruction(text, lang) {
+        try {
+            const utter = new SpeechSynthesisUtterance(text);
+            // Map locale codes to speechSynthesis voice/lang where possible
+            utter.lang = lang;
+
+            // Optional: pick a matching voice if available
+            const voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length) {
+                // try to find exact match on lang
+                const match = voices.find(v => v.lang && v.lang.startsWith(lang));
+                if (match) utter.voice = match;
+            }
+
+            window.speechSynthesis.speak(utter);
+        } catch (err) {
+            console.error('SpeechSynthesis failed:', err);
+            this._markAudioUnavailable();
         }
     }
 

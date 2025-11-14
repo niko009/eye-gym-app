@@ -22,7 +22,8 @@
           "ro": "Uitați-vă departe de ecran"
         },
         "duration_sec": 5,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "close_eyes_and_rest"
       },
       {
         "step_num": 2,
@@ -42,12 +43,16 @@
           "ro": "Clipiți încet de 5 ori"
         },
         "duration_sec": 10,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "blink_slowly_5_times"
       }
     ],
     "is_premium": false,
     "has_audio": true,
-    "tags": ["quick", "focus"]
+    "tags": [
+      "quick",
+      "focus"
+    ]
   },
   {
     "id": "blinking-drill",
@@ -92,12 +97,16 @@
           "ro": "Clipiți normal de 20 de ori"
         },
         "duration_sec": 20,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "blink_normally_20_times"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["quick", "dry-eyes"]
+    "tags": [
+      "quick",
+      "dry-eyes"
+    ]
   },
   {
     "id": "eye-rolling",
@@ -147,7 +156,10 @@
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["tension", "relaxation"]
+    "tags": [
+      "tension",
+      "relaxation"
+    ]
   },
   {
     "id": "near-far-focus",
@@ -202,12 +214,16 @@
           "ro": "Repetați alternarea focalizării încă de 3 ori"
         },
         "duration_sec": 25,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "repeat_3_times"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["focus", "strength"]
+    "tags": [
+      "focus",
+      "strength"
+    ]
   },
   {
     "id": "palming",
@@ -262,12 +278,16 @@
           "ro": "Deschideți încet ochii"
         },
         "duration_sec": 5,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "slowly_open_your_eyes"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["relaxation", "deep-rest"]
+    "tags": [
+      "relaxation",
+      "deep-rest"
+    ]
   },
   {
     "id": "figure-eight",
@@ -322,12 +342,16 @@
           "ro": "Clipiți și relaxați-vă"
         },
         "duration_sec": 10,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "blink_and_relax"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["flexibility", "coordination"]
+    "tags": [
+      "flexibility",
+      "coordination"
+    ]
   },
   {
     "id": "zooming",
@@ -382,12 +406,16 @@
           "ro": "Repetați încă de 2 ori"
         },
         "duration_sec": 5,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "repeat_2_more_times"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["focus", "strength"]
+    "tags": [
+      "focus",
+      "strength"
+    ]
   },
   {
     "id": "side-to-side",
@@ -432,7 +460,8 @@
           "ro": "Repetați încet de 5 ori"
         },
         "duration_sec": 20,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "repeat_slowly_5_times"
       },
       {
         "step_num": 4,
@@ -442,12 +471,16 @@
           "ro": "Clipiți și centrați privirea"
         },
         "duration_sec": 5,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "blink_and_center_your"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["tension", "quick"]
+    "tags": [
+      "tension",
+      "quick"
+    ]
   },
   {
     "id": "up-and-down",
@@ -492,7 +525,8 @@
           "ro": "Repetați încet de 5 ori"
         },
         "duration_sec": 20,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "repeat_slowly_5_times"
       },
       {
         "step_num": 4,
@@ -502,12 +536,16 @@
           "ro": "Clipiți și centrați privirea"
         },
         "duration_sec": 5,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "blink_and_center_your"
       }
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["tension", "quick"]
+    "tags": [
+      "tension",
+      "quick"
+    ]
   },
   {
     "id": "diagonal-stretch",
@@ -552,7 +590,8 @@
           "ro": "Repetați de 3 ori"
         },
         "duration_sec": 15,
-        "audio_base64": null
+        "audio_base64": null,
+        "audio_phrase_id": "repeat_3_times"
       },
       {
         "step_num": 4,
@@ -567,6 +606,9 @@
     ],
     "is_premium": false,
     "has_audio": false,
-    "tags": ["strength", "comprehensive"]
+    "tags": [
+      "strength",
+      "comprehensive"
+    ]
   }
 ]
