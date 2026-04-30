@@ -5,6 +5,7 @@ import { Complex, Exercise } from '../types';
 import { EXERCISES } from '../data';
 import { speak, getSettings, saveStats, getStats, updateStreak } from '../utils';
 import ExerciseAnimation from './ExerciseAnimation';
+import { useTelegram } from '../hooks/useTelegram';
 
 interface Props {
   complex: Complex;
@@ -12,12 +13,25 @@ interface Props {
 }
 
 export default function WorkoutSession({ complex, onClose }: Props) {
+  const { hapticFeedback, tg } = useTelegram();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [isPaused, setIsPaused] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   
+  useEffect(() => {
+    if (tg?.BackButton) {
+      tg.BackButton.show();
+      const handleBack = () => onClose(false);
+      tg.BackButton.onClick(handleBack);
+      return () => {
+        tg.BackButton.hide();
+        tg.BackButton.offClick(handleBack);
+      };
+    }
+  }, [tg, onClose]);
+
   const settings = getSettings();
   const currentExerciseId = complex.exercises[currentIndex];
   const currentExercise = EXERCISES.find(e => e.id === currentExerciseId)!;
@@ -196,14 +210,14 @@ export default function WorkoutSession({ complex, onClose }: Props) {
       {/* Controls */}
       <div className="w-full flex items-center justify-center gap-4 mt-4 pb-8 z-10">
         <button
-          onClick={() => setIsPaused(!isPaused)}
+          onClick={() => { hapticFeedback(); setIsPaused(!isPaused); }}
           className="flex-1 py-4 bg-slate-100 rounded-2xl text-slate-600 font-black tracking-widest hover:bg-slate-200 transition-all uppercase text-sm"
         >
           {isPaused ? 'ПРОДОЛЖИТЬ' : 'ПАУЗА'}
         </button>
         
         <button
-          onClick={nextStep}
+          onClick={() => { hapticFeedback(); nextStep(); }}
           className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black tracking-widest shadow-lg shadow-emerald-200 hover:scale-[1.02] active:scale-100 transition-all uppercase text-sm"
         >
           {isResting ? 'НАЧАТЬ' : 'ПРОПУСТИТЬ'}

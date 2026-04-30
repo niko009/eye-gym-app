@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Play, Flame, Clock, Award, Crown, Settings, BarChart3, Zap, Coffee, Activity, Sparkles } from 'lucide-react';
 import { COMPLEXES } from '../data';
 import { Complex, UserStats, UserSettings } from '../types';
+import { useTelegram } from '../hooks/useTelegram';
 
 interface Props {
   stats: UserStats;
@@ -34,22 +35,29 @@ const getComplexColor = (id: string) => {
 };
 
 export default function Dashboard({ stats, settings, onSelectComplex, onOpenStats, onOpenSettings, onUpgrade }: Props) {
+  const { hapticFeedback, user } = useTelegram();
+
   return (
-    <div className="min-h-screen bg-emerald-50 pb-24">
+    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--tg-theme-bg-color, #f0fdf4)' }}>
       {/* Header */}
-      <header className="bg-white px-6 py-8 rounded-b-[40px] shadow-sm border-b border-emerald-100">
+      <header className="bg-white px-6 pt-safe pb-8 rounded-b-[40px] shadow-sm border-b border-emerald-100">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
               <BarChart3 size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-emerald-900 tracking-tight leading-none">Упражнения для глаз</h1>
+              <h1 className="text-xl font-black text-emerald-900 tracking-tight leading-none">
+                {user?.first_name ? `Привет, ${user.first_name}!` : 'Упражнения для глаз'}
+              </h1>
               <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">Здоровье Ваших Глаз</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <button onClick={onOpenSettings} className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-100">
+            <button 
+              onClick={() => { hapticFeedback(); onOpenSettings(); }}
+              className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-100"
+            >
               <Settings size={20} />
             </button>
           </div>
@@ -110,7 +118,7 @@ export default function Dashboard({ stats, settings, onSelectComplex, onOpenStat
             <motion.div
               key={complex.id}
               whileTap={{ scale: 0.97 }}
-              onClick={() => onSelectComplex(complex)}
+              onClick={() => { hapticFeedback(); onSelectComplex(complex); }}
               className="group bg-white p-5 rounded-[28px] shadow-sm border border-emerald-50 flex items-start gap-4 cursor-pointer hover:border-emerald-200 transition-all"
             >
               <div className={`w-12 h-12 flex-shrink-0 rounded-2xl flex items-center justify-center border ${getComplexColor(complex.id)} shadow-sm`}>
