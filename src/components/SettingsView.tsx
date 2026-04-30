@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Volume2, Bell, Crown, Trash2 } from 'lucide-react';
+import { X, Volume2, Bell, Trash2, Languages } from 'lucide-react';
 import { UserSettings } from '../types';
 
 interface Props {
@@ -9,15 +9,41 @@ interface Props {
   onReset: () => void;
 }
 
+const translations = {
+  ru: {
+    title: 'Настройки',
+    settings: 'Настройки',
+    voice: 'Голосовой коуч',
+    reminders: 'Напоминания',
+    reminderTime: 'Время уведомления',
+    language: 'Язык / Limbă',
+    reset: 'Сбросить весь прогресс',
+    save: 'Сохранить изменения',
+  },
+  ro: {
+    title: 'Setări',
+    settings: 'Setări',
+    voice: 'Antrenor vocal',
+    reminders: 'Mementouri',
+    reminderTime: 'Ora notificării',
+    language: 'Язык / Limbă',
+    reset: 'Resetează tot progresul',
+    save: 'Salvează modificările',
+  }
+};
+
 export default function SettingsView({ settings, onUpdate, onClose, onReset }: Props) {
+  const t = translations[settings.language || 'ru'] || translations.ru;
+  
   const toggleVoice = () => onUpdate({ ...settings, voiceEnabled: !settings.voiceEnabled });
   const toggleReminders = () => onUpdate({ ...settings, remindersEnabled: !settings.remindersEnabled });
   const setReminderTime = (e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ ...settings, reminderTime: e.target.value });
+  const setLanguage = (lang: 'ru' | 'ro') => onUpdate({ ...settings, language: lang });
 
   return (
     <div className="fixed inset-0 bg-emerald-50 z-50 flex flex-col pt-safe px-6">
       <header className="py-6 flex items-center justify-between border-b border-emerald-100">
-        <h1 className="text-2xl font-black text-emerald-900 tracking-tight">Настройки</h1>
+        <h1 className="text-2xl font-black text-emerald-900 tracking-tight">{t.title}</h1>
         <button onClick={onClose} className="p-3 bg-white border border-emerald-100 rounded-2xl text-slate-400 hover:text-slate-900 transition-colors shadow-sm">
           <X size={24} />
         </button>
@@ -26,14 +52,14 @@ export default function SettingsView({ settings, onUpdate, onClose, onReset }: P
       <main className="flex-1 overflow-y-auto py-8">
         <div className="space-y-8">
           <section>
-            <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">Настройки</h2>
+            <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">{t.settings}</h2>
             <div className="space-y-2">
               <div className="flex items-center justify-between p-4 bg-white border border-emerald-50 rounded-3xl shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600 border border-emerald-100">
                     <Volume2 size={18} />
                   </div>
-                  <span className="font-bold text-slate-700">Голосовой коуч</span>
+                  <span className="font-bold text-slate-700">{t.voice}</span>
                 </div>
                 <button
                    onClick={toggleVoice}
@@ -48,7 +74,7 @@ export default function SettingsView({ settings, onUpdate, onClose, onReset }: P
                   <div className="p-2 bg-orange-50 rounded-xl text-orange-500 border border-orange-100">
                     <Bell size={18} />
                   </div>
-                  <span className="font-bold text-slate-700">Напоминания</span>
+                  <span className="font-bold text-slate-700">{t.reminders}</span>
                 </div>
                 <button
                    onClick={toggleReminders}
@@ -60,7 +86,7 @@ export default function SettingsView({ settings, onUpdate, onClose, onReset }: P
 
               {settings.remindersEnabled && (
                 <div className="flex items-center justify-between p-4 bg-emerald-100/50 rounded-3xl mt-2 animate-in fade-in slide-in-from-top-2">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">Время уведомления</span>
+                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">{t.reminderTime}</span>
                   <input
                     type="time"
                     value={settings.reminderTime}
@@ -73,29 +99,37 @@ export default function SettingsView({ settings, onUpdate, onClose, onReset }: P
           </section>
 
           <section>
-            <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">Аккаунт</h2>
-            <div className={`p-6 rounded-[32px] border-2 transition-all shadow-sm ${settings.isPro ? 'bg-white border-emerald-200 ring-4 ring-emerald-500/10' : 'bg-emerald-100/30 border-transparent'}`}>
-              <div className="flex items-center gap-3 mb-2">
-                 <div className={`p-2 rounded-xl ${settings.isPro ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                   <Crown size={20} fill="currentColor" />
-                 </div>
-                 <span className="font-black text-lg tracking-tight text-slate-900">{settings.isPro ? 'Pro Активен' : 'Бесплатная версия'}</span>
+            <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">{t.language}</h2>
+            <div className="p-4 bg-white border border-emerald-50 rounded-3xl shadow-sm flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600 border border-emerald-100">
+                   <Languages size={18} />
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setLanguage('ru')}
+                    className={`px-3 py-1 rounded-lg font-bold text-xs ${settings.language === 'ru' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}
+                  >
+                    RU
+                  </button>
+                  <button 
+                    onClick={() => setLanguage('ro')}
+                    className={`px-3 py-1 rounded-lg font-bold text-xs ${settings.language === 'ro' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}
+                  >
+                    RO
+                  </button>
+                </div>
               </div>
-              <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                {settings.isPro 
-                  ? 'Неограниченный доступ ко всем упражнениям и голосовым подсказкам.' 
-                  : 'Перейдите на Pro, чтобы открыть продвинутые схемы координации.'}
-              </p>
             </div>
           </section>
 
-          <section className="pt-8 flex justify-center">
+          <section className="pt-4 flex justify-center">
              <button
                 onClick={onReset}
                 className="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-red-500 transition-colors bg-white px-6 py-3 rounded-full border border-slate-100 shadow-sm"
              >
                <Trash2 size={16} />
-               Сбросить весь прогресс
+               {t.reset}
              </button>
           </section>
         </div>
@@ -106,7 +140,7 @@ export default function SettingsView({ settings, onUpdate, onClose, onReset }: P
           onClick={onClose}
           className="w-full py-4 bg-emerald-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-900/20"
         >
-          Сохранить изменения
+          {t.save}
         </button>
       </div>
     </div>

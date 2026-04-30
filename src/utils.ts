@@ -16,7 +16,8 @@ export const defaultSettings: UserSettings = {
   voiceEnabled: true,
   remindersEnabled: false,
   reminderTime: '10:00',
-  isPro: false,
+  isPro: true,
+  language: 'ru',
 };
 
 export function getStats(): UserStats {
@@ -30,25 +31,55 @@ export function saveStats(stats: UserStats) {
 
 export function getSettings(): UserSettings {
   const stored = localStorage.getItem(SETTINGS_KEY);
-  return stored ? JSON.parse(stored) : defaultSettings;
+  if (!stored) return defaultSettings;
+  try {
+    return { ...defaultSettings, ...JSON.parse(stored) };
+  } catch (e) {
+    return defaultSettings;
+  }
 }
 
 export function saveSettings(settings: UserSettings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
-export function speak(text: string) {
-  if ('speechSynthesis' in window) {
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-    
+export function speak(text: string, lang: 'ru' | 'ro' = 'ru') {
+  if (!('speechSynthesis' in window)) return;
+
+  // Cancel any ongoing speech
+  window.speechSynthesis.cancel();
+  
+  const doSpeak = () => {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ru-RU';
-    utterance.rate = 0.9; // Slightly slower for calmness
+    const targetLang = lang === 'ro' ? 'ro-RO' : 'ru-RU';
+    
+    // Set basic properties
+    utterance.lang = targetLang;
+    utterance.rate = 0.9;
     utterance.pitch = 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    
+    if (voices.length > 0) {
+      // 1. Try exact match (ro-RO or ru-RU)
+      // 2. Try prefix match (ro or ru)
+      // 3. Try case-insensitive substring
+      const voice = voices.find(v => v.lang === targetLang) || 
+                    voices.find(v => v.lang.startsWith(lang)) ||
+                    voices.find(v => v.lang.toLowerCase().includes(lang));
+      
+      if (voice) {
+        utterance.voice = voice;
+      }
+    }
     
     window.speechSynthesis.speak(utterance);
-  }
+  };
+
+  // If voices are already loaded, speak immediately
+  // Otherwise, the first call might fail to find voices, so we can't do much 
+  // but subsequent calls will work as browser caches voices.
+  doSpeak();
 }
 
 export function updateStreak(stats: UserStats): UserStats {

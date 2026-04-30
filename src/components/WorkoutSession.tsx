@@ -12,8 +12,48 @@ interface Props {
   onClose: (completed: boolean) => void;
 }
 
+const translations = {
+  ru: {
+    finishTitle: 'Отлично!',
+    finishDesc: (name: string) => `Вы закончили тренировку «${name}».`,
+    toMain: 'Вернуться на главную',
+    exerciseOf: (current: number, total: number) => `Упражнение ${current} из ${total}`,
+    rest: 'Перерыв',
+    secShort: 'секунд',
+    prepare: 'Приготовьтесь к следующему...',
+    pause: 'ПАУЗА',
+    continue: 'ПРОДОЛЖИТЬ',
+    skip: 'ПРОПУСТИТЬ',
+    start: 'НАЧАТЬ',
+    voiceOn: 'Голос ВКЛ',
+    voiceOff: 'Без звука',
+    finishVoice: 'Тренировка завершена. Отличная работа!',
+    restVoice: 'Перерыв десять секунд.',
+  },
+  ro: {
+    finishTitle: 'Excelent!',
+    finishDesc: (name: string) => `Ați terminat antrenamentul „${name}”.`,
+    toMain: 'Înapoi la meniu',
+    exerciseOf: (current: number, total: number) => `Exercițiul ${current} din ${total}`,
+    rest: 'Pauză',
+    secShort: 'secunde',
+    prepare: 'Pregătiți-vă pentru următorul...',
+    pause: 'PAUZĂ',
+    continue: 'CONTINUĂ',
+    skip: 'SARE',
+    start: 'START',
+    voiceOn: 'Voce PORNITĂ',
+    voiceOff: 'Fără sunet',
+    finishVoice: 'Antrenament finalizat. Excelentă treabă!',
+    restVoice: 'Pauză zece secunde.',
+  }
+};
+
 export default function WorkoutSession({ complex, onClose }: Props) {
   const { hapticFeedback, tg } = useTelegram();
+  const settings = getSettings();
+  const t = translations[settings.language || 'ru'] || translations.ru;
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isResting, setIsResting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -32,7 +72,6 @@ export default function WorkoutSession({ complex, onClose }: Props) {
     }
   }, [tg, onClose]);
 
-  const settings = getSettings();
   const currentExerciseId = complex.exercises[currentIndex];
   const currentExercise = EXERCISES.find(e => e.id === currentExerciseId)!;
 
@@ -75,18 +114,20 @@ export default function WorkoutSession({ complex, onClose }: Props) {
   // Voice handle
   useEffect(() => {
     if (isFinished) {
-      if (settings.voiceEnabled) speak('Тренировка завершена. Отличная работа!');
+      if (settings.voiceEnabled) speak(t.finishVoice, settings.language);
       return;
     }
 
     if (isResting) {
-      if (settings.voiceEnabled) speak('Перерыв десять секунд.');
+      if (settings.voiceEnabled) speak(t.restVoice, settings.language);
     } else {
       if (settings.voiceEnabled) {
-        speak(`${currentExercise.name}. ${currentExercise.instruction}`);
+        const name = settings.language === 'ro' ? currentExercise.nameRo : currentExercise.name;
+        const msg = settings.language === 'ro' ? currentExercise.instructionRo : currentExercise.instruction;
+        speak(`${name}. ${msg}`, settings.language);
       }
     }
-  }, [currentIndex, isResting, isFinished, settings.voiceEnabled, currentExercise.name, currentExercise.instruction]);
+  }, [currentIndex, isResting, isFinished, settings.voiceEnabled, settings.language, currentExercise, t]);
 
   const handleFinish = () => {
     // Update stats
@@ -122,13 +163,13 @@ export default function WorkoutSession({ complex, onClose }: Props) {
         >
           <CheckCircle2 size={80} />
         </motion.div>
-        <h2 className="text-3xl font-bold mb-2">Отлично!</h2>
-        <p className="text-gray-600 mb-8">Вы закончили тренировку «{complex.name}».</p>
+        <h2 className="text-3xl font-bold mb-2">{t.finishTitle}</h2>
+        <p className="text-gray-600 mb-8">{t.finishDesc(settings.language === 'ro' ? complex.nameRo : complex.name)}</p>
         <button
           onClick={handleFinish}
           className="w-full max-w-xs py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-700 transition-colors"
         >
-          Вернуться на главную
+          {t.toMain}
         </button>
       </div>
     );
@@ -146,14 +187,18 @@ export default function WorkoutSession({ complex, onClose }: Props) {
           <X size={24} />
         </button>
         <div className="flex flex-col items-center">
-          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] leading-none mb-1">Упражнение {currentIndex + 1} из {complex.exercises.length}</span>
+          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] leading-none mb-1">
+            {t.exerciseOf(currentIndex + 1, complex.exercises.length)}
+          </span>
           <h1 className="text-xl font-black text-slate-800 leading-tight">
-            {isResting ? 'Перерыв' : currentExercise.name}
+            {isResting ? t.rest : (settings.language === 'ro' ? currentExercise.nameRo : currentExercise.name)}
           </h1>
         </div>
         <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
            <div className={`w-2 h-2 rounded-full ${settings.voiceEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
-           <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">{settings.voiceEnabled ? 'Голос ВКЛ' : 'Без звука'}</span>
+           <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
+             {settings.voiceEnabled ? t.voiceOn : t.voiceOff}
+           </span>
         </div>
       </div>
 
@@ -171,7 +216,7 @@ export default function WorkoutSession({ complex, onClose }: Props) {
               <div className="w-56 h-56 bg-blue-50 rounded-[60px] flex items-center justify-center border-4 border-blue-100 shadow-inner">
                 <span className="text-8xl font-black text-blue-600 tabular-nums tracking-tighter">{timeLeft}</span>
               </div>
-              <p className="mt-8 text-slate-400 font-bold uppercase tracking-widest text-xs">Приготовьтесь к следующему...</p>
+              <p className="mt-8 text-slate-400 font-bold uppercase tracking-widest text-xs">{t.prepare}</p>
             </motion.div>
           ) : (
             <motion.div
@@ -190,7 +235,7 @@ export default function WorkoutSession({ complex, onClose }: Props) {
                   00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
                 </div>
                 <p className="text-slate-500 font-medium leading-relaxed max-w-xs mx-auto">
-                  {currentExercise.instruction}
+                  {settings.language === 'ro' ? currentExercise.instructionRo : currentExercise.instruction}
                 </p>
               </div>
             </motion.div>
@@ -213,14 +258,14 @@ export default function WorkoutSession({ complex, onClose }: Props) {
           onClick={() => { hapticFeedback(); setIsPaused(!isPaused); }}
           className="flex-1 py-4 bg-slate-100 rounded-2xl text-slate-600 font-black tracking-widest hover:bg-slate-200 transition-all uppercase text-sm"
         >
-          {isPaused ? 'ПРОДОЛЖИТЬ' : 'ПАУЗА'}
+          {isPaused ? t.continue : t.pause}
         </button>
         
         <button
           onClick={() => { hapticFeedback(); nextStep(); }}
           className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-black tracking-widest shadow-lg shadow-emerald-200 hover:scale-[1.02] active:scale-100 transition-all uppercase text-sm"
         >
-          {isResting ? 'НАЧАТЬ' : 'ПРОПУСТИТЬ'}
+          {isResting ? t.start : t.skip}
         </button>
       </div>
     </div>

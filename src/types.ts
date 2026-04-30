@@ -11,7 +11,9 @@ export enum Category {
 export interface Exercise {
   id: string;
   name: string;
+  nameRo: string;
   instruction: string;
+  instructionRo: string;
   category: Category;
   duration: number; // in seconds
   isPro: boolean;
@@ -21,7 +23,9 @@ export interface Exercise {
 export interface Complex {
   id: string;
   name: string;
+  nameRo: string;
   description: string;
+  descriptionRo: string;
   exercises: string[]; // ids
   isPro: boolean;
   durationTotal: number; // in minutes
@@ -41,4 +45,5 @@ export interface UserSettings {
   remindersEnabled: boolean;
   reminderTime: string; // "HH:mm"
   isPro: boolean;
+  language: 'ru' | 'ro';
 }

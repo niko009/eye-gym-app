@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Play, Flame, Clock, Award, Crown, Settings, BarChart3, Zap, Coffee, Activity, Sparkles } from 'lucide-react';
+import { Play, Flame, Clock, Award, Settings, BarChart3, Zap, Coffee, Activity, Sparkles } from 'lucide-react';
 import { COMPLEXES } from '../data';
 import { Complex, UserStats, UserSettings } from '../types';
 import { useTelegram } from '../hooks/useTelegram';
@@ -11,7 +11,6 @@ interface Props {
   onSelectComplex: (complex: Complex) => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
-  onUpgrade: () => void;
 }
 
 const getComplexIcon = (id: string) => {
@@ -34,8 +33,36 @@ const getComplexColor = (id: string) => {
   }
 };
 
-export default function Dashboard({ stats, settings, onSelectComplex, onOpenStats, onOpenSettings, onUpgrade }: Props) {
+const translations = {
+  ru: {
+    hello: (name: string) => `Привет, ${name}!`,
+    defaultTitle: 'Упражнения для глаз',
+    tagline: 'Здоровье Ваших Глаз',
+    streak: 'Дней',
+    min: 'Мин.',
+    sessions: 'Сессий',
+    workouts: 'Тренировки',
+    available: (count: number) => `${count} Доступно`,
+    minShort: 'Мин',
+    exShort: 'Упр.',
+  },
+  ro: {
+    hello: (name: string) => `Salut, ${name}!`,
+    defaultTitle: 'Exerciții pentru ochi',
+    tagline: 'Sănătatea ochilor tăi',
+    streak: 'Zile',
+    min: 'Min.',
+    sessions: 'Sesiuni',
+    workouts: 'Antrenamente',
+    available: (count: number) => `${count} Disponibile`,
+    minShort: 'Min',
+    exShort: 'Ex.',
+  }
+};
+
+export default function Dashboard({ stats, settings, onSelectComplex, onOpenStats, onOpenSettings }: Props) {
   const { hapticFeedback, user } = useTelegram();
+  const t = translations[settings.language || 'ru'] || translations.ru;
 
   return (
     <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--tg-theme-bg-color, #f0fdf4)' }}>
@@ -48,9 +75,9 @@ export default function Dashboard({ stats, settings, onSelectComplex, onOpenStat
             </div>
             <div>
               <h1 className="text-xl font-black text-emerald-900 tracking-tight leading-none">
-                {user?.first_name ? `Привет, ${user.first_name}!` : 'Упражнения для глаз'}
+                {user?.first_name ? t.hello(user.first_name) : t.defaultTitle}
               </h1>
-              <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">Здоровье Ваших Глаз</p>
+              <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">{t.tagline}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -67,50 +94,26 @@ export default function Dashboard({ stats, settings, onSelectComplex, onOpenStat
           <div className="bg-white border border-emerald-50 p-4 rounded-3xl flex flex-col items-center shadow-sm">
             <Flame className="text-orange-500 mb-1" size={20} />
             <span className="text-xl font-black text-slate-900 leading-none">{stats.streak}</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Дней</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">{t.streak}</span>
           </div>
           <div className="bg-white border border-emerald-50 p-4 rounded-3xl flex flex-col items-center shadow-sm">
             <Clock className="text-emerald-500 mb-1" size={20} />
             <span className="text-xl font-black text-slate-900 leading-none">{stats.totalTimeMinutes}</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Мин.</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">{t.min}</span>
           </div>
           <div className="bg-white border border-emerald-50 p-4 rounded-3xl flex flex-col items-center shadow-sm">
             <Award className="text-blue-500 mb-1" size={20} />
             <span className="text-xl font-black text-slate-900 leading-none">{stats.completedWorkouts}</span>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Сессий</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">{t.sessions}</span>
           </div>
         </div>
       </header>
 
-      {/* Hero Banner (Pro Promo) */}
-      {!settings.isPro && (
-        <section className="px-6 mt-8">
-          <motion.div 
-            whileTap={{ scale: 0.98 }}
-            onClick={onUpgrade}
-            className="bg-emerald-900 rounded-[32px] p-6 text-white relative overflow-hidden flex items-center gap-4 cursor-pointer shadow-xl shadow-emerald-900/20"
-          >
-            <div className="z-10">
-              <div className="inline-flex items-center gap-1 bg-orange-400 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-tighter mb-2">
-                <Crown size={10} /> Pro Версия
-              </div>
-              <h2 className="text-xl font-bold leading-tight">Открыть весь контент</h2>
-              <p className="text-emerald-300/80 text-xs mt-1">Продвинутые программы и голосовой коуч.</p>
-            </div>
-            <div className="ml-auto bg-white/10 p-3 rounded-2xl">
-              <Play fill="white" size={20} />
-            </div>
-            {/* Decoration */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl" />
-          </motion.div>
-        </section>
-      )}
-
       {/* Complexes List */}
       <main className="px-6 mt-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-black text-slate-800 tracking-tight">Тренировки</h2>
-          <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">{COMPLEXES.length} Доступно</span>
+          <h2 className="text-xl font-black text-slate-800 tracking-tight">{t.workouts}</h2>
+          <span className="text-xs text-slate-400 font-bold uppercase tracking-widest">{t.available(COMPLEXES.length)}</span>
         </div>
 
         <div className="space-y-4">
@@ -126,18 +129,19 @@ export default function Dashboard({ stats, settings, onSelectComplex, onOpenStat
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                   <h3 className="text-lg font-bold text-slate-800 leading-tight">{complex.name}</h3>
-                   {complex.isPro && !settings.isPro && (
-                     <span className="text-orange-400"><Crown size={14} fill="currentColor" /></span>
-                   )}
+                   <h3 className="text-lg font-bold text-slate-800 leading-tight">
+                     {settings.language === 'ro' ? complex.nameRo : complex.name}
+                   </h3>
                 </div>
-                <p className="text-sm text-slate-500 line-clamp-1">{complex.description}</p>
+                <p className="text-sm text-slate-500 line-clamp-1">
+                  {settings.language === 'ro' ? complex.descriptionRo : complex.description}
+                </p>
                 <div className="flex items-center gap-4 mt-3">
                   <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-full">
-                    <Clock size={12} /> {complex.durationTotal} Мин
+                    <Clock size={12} /> {complex.durationTotal} {t.minShort}
                   </span>
                   <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                    < Award size={12} /> {complex.exercises.length} Упр.
+                    < Award size={12} /> {complex.exercises.length} {t.exShort}
                   </span>
                 </div>
               </div>
