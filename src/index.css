@@ -3,7 +3,10 @@
 @theme {
   --animate-spin-slow: spin 8s linear infinite;
   --color-tg-bg: var(--tg-theme-bg-color, #f0fdf4);
+  --color-tg-secondary-bg: var(--tg-theme-secondary-bg-color, #ffffff);
   --color-tg-text: var(--tg-theme-text-color, #0f172a);
+  --color-tg-hint: var(--tg-theme-hint-color, #94a3b8);
+  --color-tg-link: var(--tg-theme-link-color, #10b981);
   --color-tg-button: var(--tg-theme-button-color, #10b981);
   --color-tg-button-text: var(--tg-theme-button-text-color, #ffffff);
 }
@@ -35,11 +38,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-emerald-100 rounded-full;
+  @apply bg-emerald-500/20 rounded-full;
 }
-
+ 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-emerald-200;
+  @apply bg-emerald-500/30;
 }
 
 .pt-safe {

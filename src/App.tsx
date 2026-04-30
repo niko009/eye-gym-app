@@ -54,7 +54,7 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 relative">
+    <div className="max-w-md mx-auto min-h-screen bg-tg-bg relative">
       <AnimatePresence mode="wait">
         {view === 'dashboard' && (
           <motion.div

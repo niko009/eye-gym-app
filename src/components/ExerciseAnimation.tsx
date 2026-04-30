@@ -24,7 +24,7 @@ const Eye = ({
   transition?: any
 }) => {
   return (
-    <div className="relative w-28 h-20 bg-white rounded-full border-4 border-emerald-100 shadow-xl overflow-hidden flex items-center justify-center">
+    <div className="relative w-28 h-20 bg-white rounded-full border-4 border-emerald-500/20 shadow-xl overflow-hidden flex items-center justify-center">
       {/* Iris and Pupil */}
       <motion.div
         className="w-10 h-10 rounded-full bg-emerald-600 relative flex items-center justify-center shadow-lg border-2 border-emerald-700/20"
@@ -44,19 +44,19 @@ const Eye = ({
       
       {/* Eyelids */}
       <motion.div 
-        className="absolute top-0 left-0 right-0 bg-emerald-50 border-b border-emerald-100 z-10"
+        className="absolute top-0 left-0 right-0 bg-emerald-500/20 border-b border-emerald-500/20 z-10"
         animate={{ height: blinkProgress }}
         transition={transition}
       />
       <motion.div 
-        className="absolute bottom-0 left-0 right-0 bg-emerald-50 border-t border-emerald-100 z-10"
+        className="absolute bottom-0 left-0 right-0 bg-emerald-500/20 border-t border-emerald-500/20 z-10"
         animate={{ height: blinkProgress }}
         transition={transition}
       />
-
+ 
       {/* Tight Squeeze Overlay */}
       <motion.div 
-        className="absolute inset-0 bg-emerald-900/20 z-20"
+        className="absolute inset-0 bg-emerald-900/40 z-20"
         animate={{ opacity: squeezeProgress }}
         transition={transition}
       />
@@ -151,7 +151,7 @@ export default function ExerciseAnimation({ type }: Props) {
     <div className="relative w-full h-64 flex items-center justify-center gap-6">
       {/* Animation Context for palming */}
       <motion.div 
-        className="flex gap-8 items-center justify-center p-8 rounded-[40px] bg-emerald-50/50 border border-emerald-100 shadow-inner"
+        className="flex gap-8 items-center justify-center p-8 rounded-[40px] bg-emerald-500/5 border border-emerald-500/10 shadow-inner"
         animate={type === 'palming' ? { opacity: anim.opacity } : {}}
         transition={type === 'palming' ? anim.transition : {}}
       >
@@ -177,12 +177,12 @@ export default function ExerciseAnimation({ type }: Props) {
           transition={anim.transition}
         />
       </motion.div>
-
+ 
       {/* Decorative background elements */}
-      <div className="absolute inset-0 -z-10 opacity-20 pointer-events-none overflow-hidden">
-         <div className="absolute top-1/2 left-0 w-full h-px bg-emerald-400" />
-         <div className="absolute left-1/2 top-0 h-full w-px bg-emerald-400" />
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-emerald-400 rounded-full" />
+      <div className="absolute inset-0 -z-10 opacity-10 pointer-events-none overflow-hidden">
+         <div className="absolute top-1/2 left-0 w-full h-px bg-emerald-500" />
+         <div className="absolute left-1/2 top-0 h-full w-px bg-emerald-500" />
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-emerald-500 rounded-full" />
       </div>
     </div>
   );
