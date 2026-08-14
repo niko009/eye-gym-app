@@ -1,0 +1,16 @@
+.idea/
+*.iml
+.gradle/
+.kotlin/
+build/
+local.properties
+*.hprof
+replay_pid*.log
+sing_key
+*.jks
+*.keystore
+*.apk
+*.aab
+.externalNativeBuild/
+.cxx/
+captures/

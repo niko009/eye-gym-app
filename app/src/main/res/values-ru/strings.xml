@@ -1,0 +1,83 @@
+<resources>
+    <string name="app_name">Eye Gym</string>
+        <string name="complex_name_quick_start">Быстрый старт</string>
+        <string name="complex_name_work_break">Рабочий перерыв</string>
+        <string name="complex_name_full_recovery">Полное восстановление</string>
+        <string name="complex_name_stress_relief">Снятие напряжения</string>
+        <string name="complex_name_focus_marathon">Фокус-марафон</string>
+        <string name="complex_name_malyshev_method">Метод Малышева</string>
+
+        <string name="complex_desc_quick_start">3 минуты, 6 упражнений</string>
+        <string name="complex_desc_work_break">5 минут, 10 упражнений</string>
+        <string name="complex_desc_full_recovery">8 минут, Pro</string>
+        <string name="complex_desc_stress_relief">10 минут, Pro</string>
+        <string name="complex_desc_focus_marathon">7 минут, Pro</string>
+        <string name="complex_desc_malyshev_method">3–5 минут, 3 упражнения</string>
+
+        <string name="exercise_name_up_down">Вверх-Вниз</string>
+        <string name="exercise_name_left_right">Вправо-Влево</string>
+        <string name="exercise_name_diagonal">Диагональ</string>
+        <string name="exercise_name_circle">Круг</string>
+        <string name="exercise_name_blink">Частое моргание</string>
+        <string name="exercise_name_focus">Фокусировка</string>
+
+        <string name="exercise_instruction_up_down">Начинаем. Медленно двигайте глазами вверх, затем вниз.</string>
+        <string name="exercise_instruction_left_right">Следующее упражнение. Медленно двигайте глазами вправо, затем влево.</string>
+        <string name="exercise_instruction_diagonal">Теперь по диагонали. Посмотрите в верхний правый угол, затем в нижний левый.</string>
+        <string name="exercise_instruction_circle">Хорошо. Теперь медленно вращайте глазами по часовой стрелке.</string>
+        <string name="exercise_instruction_blink">А теперь быстро поморгайте в течение 10 секунд.</string>
+        <string name="exercise_instruction_focus">Сфокусируйтесь на пальце перед носом, затем на дальнем объекте.</string>
+
+        <string name="exercise_name_square">Схема «Квадрат»</string>
+        <string name="exercise_name_snake">Схема «Змейка»</string>
+        <string name="exercise_name_palming">Пальминг</string>
+        <string name="exercise_name_focus_approach">Фокусировка с приближением</string>
+        <string name="exercise_name_butterfly">Бабочка</string>
+        <string name="exercise_name_infinity">Бесконечность</string>
+        <string name="exercise_name_nose_writing">Письмо носом</string>
+        <string name="exercise_name_malyshev_switches">Горизонтальные и вертикальные переключения</string>
+        <string name="exercise_name_malyshev_convergence">Раздельное сведение к переносице</string>
+        <string name="exercise_name_malyshev_circle_tracking">Слежение по круговой траектории</string>
+
+        <string name="exercise_instruction_square">Проведите глазами по контуру воображаемого квадрата. Четыре точки фиксации.</string>
+        <string name="exercise_instruction_snake">Двигайте глазами по горизонтальной волнистой траектории, затем обратно.</string>
+        <string name="exercise_instruction_palming">Разотрите ладони до тепла, приложите к закрытым глазам. Глубокое расслабление.</string>
+        <string name="exercise_instruction_focus_approach">Вытяните палец, медленно приближайте его к носу, не теряя фокус.</string>
+        <string name="exercise_instruction_butterfly">Легко и очень быстро моргайте, словно бабочка машет крыльями.</string>
+        <string name="exercise_instruction_infinity">Плавно обводите глазами знак бесконечности. Сначала в одну сторону, потом в другую.</string>
+        <string name="exercise_instruction_nose_writing">Закройте глаза. Представьте, что ваш нос — это карандаш, и напишите им в воздухе алфавит.</string>
+        <string name="exercise_instruction_malyshev_switches">Поднимите большие пальцы на ширине плеч. Четко переводите взгляд с правого пальца на левый и обратно 30 раз, затем расположите один палец над другим и переводите взгляд вверх-вниз 30 раз.</string>
+        <string name="exercise_instruction_malyshev_convergence">Прикройте один открытый глаз ладонью. Сфокусируйтесь на большом пальце или карандаше противоположной руки и медленно приближайте его к переносице 10 раз. Поменяйте сторону и повторите.</string>
+        <string name="exercise_instruction_malyshev_circle_tracking">Вытяните руку вперед и зафиксируйте взгляд на большом пальце. Описывайте небольшой круг и следите за ним без поворота головы: 10 кругов по часовой стрелке и 10 против, затем поменяйте руку.</string>
+
+
+        <string name="workout_title">Тренировка</string>
+
+        <string name="rest_period">Отдых</string>
+        <string name="workout_complete">Тренировка завершена. Вы молодец!</string>
+
+
+
+    <string name="loading">Загрузка…</string>
+    <string name="resume">Возобновить</string>
+    <string name="pause">Пауза</string>
+
+    <string name="statistics_screen_title">Статистика</string>
+    <string name="statistics_your_progress">Ваш Прогресс</string>
+    <string name="statistics_streak_days">Дней подряд</string>
+    <string name="statistics_total_time">Общее время</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_voice_coach">Голосовой помощник</string>
+    <string name="settings_reminders">Напоминания</string>
+    <string name="settings_pro_version_cd">Pro версия</string>
+    <string name="settings_pro_version_title">Pro-версия</string>
+    <string name="settings_pro_version_description">Разблокировать все функции</string>
+
+    <string name="main_screen_statistics_cd">Статистика</string>
+    <string name="main_screen_settings_cd">Настройки</string>
+    <string name="main_screen_select_complex">Выберите комплекс:</string>
+    <string name="main_screen_start_button">СТАРТ</string>
+    <string name="main_screen_pro_complex_cd">Pro-комплекс</string>
+    <string name="common_back">Назад</string>
+    </resources>
