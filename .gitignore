@@ -6,6 +6,7 @@ build/
 local.properties
 *.hprof
 replay_pid*.log
+hs_err_pid*.log
 sing_key
 *.jks
 *.keystore
