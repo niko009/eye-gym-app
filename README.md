@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Eye Gym Web/PWA
 
-# Run and deploy your AI Studio app
+Offline-first web application for guided eye relaxation workouts. The production stack is self-hosted and portable between Linux servers.
 
-This contains everything you need to run your app locally.
+## Local frontend
 
-View your app in AI Studio: https://ai.studio/apps/b385bbe2-f5e5-48ed-9a62-9fda476f8a34
+```bash
+npm ci
+npm run dev
+```
 
-## Run Locally
+## Local API
 
-**Prerequisites:**  Node.js
+```bash
+cd server
+npm ci
+DATABASE_URL=postgresql://eyegym:password@localhost:5432/eyegym \
+SESSION_SECRET=replace-with-at-least-32-characters \
+npm run dev
+```
 
+## Docker production stack
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Copy `.env.example` to `.env` and replace every secret.
+2. Point the domain to the server.
+3. Start the stack:
+
+```bash
+docker compose --profile tools run --rm migrate
+docker compose up -d --wait --wait-timeout 120
+```
+
+The stack contains Caddy, the web client, API, reminder worker, PostgreSQL and automatic database backups.
+
+Product requirements are in [`docs/WEB_PWA_SPEC.md`](docs/WEB_PWA_SPEC.md). Architecture decisions are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).

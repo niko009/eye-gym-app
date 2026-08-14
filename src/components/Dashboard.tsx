@@ -141,7 +141,7 @@ export default function Dashboard({ stats, settings, onSelectComplex, onOpenStat
                     <Clock size={12} /> {complex.durationTotal} {t.minShort}
                   </span>
                   <span className="flex items-center gap-1.5 text-[10px] font-black text-tg-hint uppercase tracking-wider">
-                    < Award size={12} /> {complex.exercises.length} {t.exShort}
+                    <Award size={12} /> {complex.exercises.length} {t.exShort}
                   </span>
                 </div>
               </div>

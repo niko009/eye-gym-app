@@ -1,53 +1,82 @@
-name: Deploy to GitHub Pages
+name: Deploy production
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+
+concurrency:
+  group: eye-gym-production
+  cancel-in-progress: false
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+  packages: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/eye-gym
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build app
-        run: npm run build
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        run: echo "tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
         with:
-          path: ./dist
+          context: .
+          file: deploy/web.Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}-web:${{ github.sha }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: server
+          push: true
+          tags: ${{ env.IMAGE_PREFIX }}-server:${{ github.sha }}
 
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     needs: build
-
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://eye-gym.bacus.dev
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+      - name: Upload deployment definition
+        env:
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.PRODUCTION_DEPLOY_PATH }}
+        run: |
+          ssh "$SSH_USER@$SSH_HOST" "mkdir -p '$DEPLOY_PATH/deploy'"
+          scp compose.yaml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/compose.yaml"
+          scp deploy/Caddyfile deploy/backup.sh "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/deploy/"
+      - name: Deploy and verify
+        env:
+          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+          SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.PRODUCTION_DEPLOY_PATH }}
+          IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | ssh "$SSH_USER@$SSH_HOST" "docker login ghcr.io -u '$GHCR_USERNAME' --password-stdin"
+          ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && WEB_IMAGE='${IMAGE_PREFIX}-web:${IMAGE_TAG}' SERVER_IMAGE='${IMAGE_PREFIX}-server:${IMAGE_TAG}' docker compose --profile tools run --rm migrate && WEB_IMAGE='${IMAGE_PREFIX}-web:${IMAGE_TAG}' SERVER_IMAGE='${IMAGE_PREFIX}-server:${IMAGE_TAG}' docker compose up -d --wait --wait-timeout 120"
+          curl --fail --retry 6 --retry-delay 5 https://eye-gym.bacus.dev/api/health

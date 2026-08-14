@@ -1,0 +1,121 @@
+name: eye-gym
+
+services:
+  proxy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  web:
+    image: ${WEB_IMAGE:-eye-gym-web:local}
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+      args:
+        VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  api:
+    image: ${SERVER_IMAGE:-eye-gym-server:local}
+    build:
+      context: ./server
+    restart: unless-stopped
+    command: ["node", "dist/http.js"]
+    environment: &server_environment
+      NODE_ENV: production
+      PORT: 8080
+      DATABASE_URL: postgresql://${POSTGRES_USER:-eyegym}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-eyegym}
+      APP_ORIGIN: https://${APP_DOMAIN}
+      SESSION_SECRET: ${SESSION_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:nikomisha@gmail.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    image: ${SERVER_IMAGE:-eye-gym-server:local}
+    build:
+      context: ./server
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    environment: *server_environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    image: ${SERVER_IMAGE:-eye-gym-server:local}
+    build:
+      context: ./server
+    command: ["node", "dist/db/migrate.js"]
+    environment: *server_environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    profiles: ["tools"]
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eyegym}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-eyegym}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eyegym} -d ${POSTGRES_DB:-eyegym}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      PGHOST: postgres
+      PGUSER: ${POSTGRES_USER:-eyegym}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-eyegym}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - ./deploy/backup.sh:/usr/local/bin/backup.sh:ro
+      - postgres_backups:/backups
+    entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  postgres_backups:
+  caddy_data:
+  caddy_config:

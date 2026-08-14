@@ -6,3 +6,16 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Android checkout artifacts that coexist in this shared worktree
+/.gradle/
+/.idea/
+/.kotlin/
+/app/
+/*.hprof
+/local.properties
+/sing_key
+
+# Runtime data
+/backups/
+/data/
