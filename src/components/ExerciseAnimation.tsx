@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Exercise } from '../types';
+import type {Exercise, MotionPreference} from '../types';
 
 interface Props {
   type: Exercise['animationType'];
+  motionPreference: MotionPreference;
 }
 
 const Eye = ({ 
@@ -13,6 +14,7 @@ const Eye = ({
   blinkProgress = "0%",
   irisScale = 1,
   squeezeProgress = 0,
+  animated = true,
   transition = { duration: 2, repeat: Infinity, ease: "easeInOut" }
 }: { 
   pupilX?: any, 
@@ -21,6 +23,7 @@ const Eye = ({
   blinkProgress?: any,
   irisScale?: any,
   squeezeProgress?: any,
+  animated?: boolean,
   transition?: any
 }) => {
   return (
@@ -28,12 +31,12 @@ const Eye = ({
       {/* Iris and Pupil */}
       <motion.div
         className="w-10 h-10 rounded-full bg-emerald-600 relative flex items-center justify-center shadow-lg border-2 border-emerald-700/20"
-        animate={{ x: pupilX, y: pupilY, scale: irisScale }}
+        animate={animated ? {x: pupilX, y: pupilY, scale: irisScale} : undefined}
         transition={transition}
       >
         <motion.div 
           className="w-5 h-5 bg-slate-900 rounded-full" 
-          animate={{ scale }}
+          animate={animated ? {scale} : undefined}
           transition={transition}
         />
         {/* Iris detail */}
@@ -45,26 +48,26 @@ const Eye = ({
       {/* Eyelids */}
       <motion.div 
         className="absolute top-0 left-0 right-0 bg-emerald-500/20 border-b border-emerald-500/20 z-10"
-        animate={{ height: blinkProgress }}
+        animate={animated ? {height: blinkProgress} : undefined}
         transition={transition}
       />
       <motion.div 
         className="absolute bottom-0 left-0 right-0 bg-emerald-500/20 border-t border-emerald-500/20 z-10"
-        animate={{ height: blinkProgress }}
+        animate={animated ? {height: blinkProgress} : undefined}
         transition={transition}
       />
  
       {/* Tight Squeeze Overlay */}
       <motion.div 
         className="absolute inset-0 bg-emerald-900/40 z-20"
-        animate={{ opacity: squeezeProgress }}
+        animate={animated ? {opacity: squeezeProgress} : undefined}
         transition={transition}
       />
     </div>
   );
 };
 
-export default function ExerciseAnimation({ type }: Props) {
+export default function ExerciseAnimation({type, motionPreference}: Props) {
   const rangeX = 25;
   const rangeY = 15;
 
@@ -166,18 +169,23 @@ export default function ExerciseAnimation({ type }: Props) {
     }
   };
 
-  const anim = getAnimationProps() as any;
+  const rawAnimation = getAnimationProps() as any;
+  const anim = motionPreference === 'slow' && rawAnimation.transition?.duration
+    ? {...rawAnimation, transition: {...rawAnimation.transition, duration: rawAnimation.transition.duration * 1.6}}
+    : rawAnimation;
+  const animated = motionPreference !== 'off';
 
   return (
     <div className="relative w-full h-64 flex items-center justify-center gap-6">
       {/* Animation Context for palming */}
       <motion.div 
         className="flex gap-8 items-center justify-center p-8 rounded-[40px] bg-emerald-500/5 border border-emerald-500/10 shadow-inner"
-        animate={type === 'palming' ? { opacity: anim.opacity } : {}}
+        animate={animated && type === 'palming' ? {opacity: anim.opacity} : undefined}
         transition={type === 'palming' ? anim.transition : {}}
       >
         {/* Left Eye */}
         <Eye 
+          animated={animated}
           pupilX={type === 'cross' || type === 'malyshev-convergence' ? anim.pupilX?.left : anim.pupilX}
           pupilY={anim.pupilY}
           scale={anim.scale}
@@ -189,6 +197,7 @@ export default function ExerciseAnimation({ type }: Props) {
         
         {/* Right Eye */}
         <Eye 
+          animated={animated}
           pupilX={type === 'cross' || type === 'malyshev-convergence' ? anim.pupilX?.right : anim.pupilX}
           pupilY={anim.pupilY}
           scale={anim.scale}

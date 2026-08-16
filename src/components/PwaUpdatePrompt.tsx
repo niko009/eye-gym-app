@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {RefreshCw, WifiOff, X} from 'lucide-react';
 import {useRegisterSW} from 'virtual:pwa-register/react';
 import type {Language} from '../types';
@@ -10,11 +11,16 @@ const copy = {
 
 export default function PwaUpdatePrompt({language}: {language: Language}) {
   const {offlineReady: [offlineReady, setOfflineReady], needRefresh: [needRefresh, setNeedRefresh], updateServiceWorker} = useRegisterSW();
+  useEffect(() => {
+    if (!offlineReady || needRefresh) return;
+    const timer = window.setTimeout(() => setOfflineReady(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [offlineReady, needRefresh, setOfflineReady]);
   if (!offlineReady && !needRefresh) return null;
   const t = copy[language];
   const close = () => {setOfflineReady(false); setNeedRefresh(false)};
   return (
-    <aside aria-live="polite" className="fixed bottom-4 left-1/2 z-[100] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center gap-3 rounded-3xl border border-emerald-400/20 bg-tg-secondary-bg p-4 shadow-2xl backdrop-blur-xl">
+    <aside aria-live="polite" className="fixed bottom-24 left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 items-center gap-3 rounded-3xl border border-emerald-400/20 bg-tg-secondary-bg p-4 shadow-2xl backdrop-blur-xl sm:bottom-6">
       <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-emerald-500/12 text-emerald-500">{needRefresh ? <RefreshCw size={20} /> : <WifiOff size={20} />}</div>
       <div className="min-w-0 flex-1"><p className="font-extrabold text-tg-text">{needRefresh ? t.update : t.offline}</p><p className="text-xs text-tg-hint">{needRefresh ? t.updateBody : t.offlineBody}</p></div>
       {needRefresh && <button type="button" onClick={() => void updateServiceWorker(true)} className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-black text-white">{t.action}</button>}

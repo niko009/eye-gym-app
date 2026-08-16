@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
-import {AnimatePresence, motion} from 'motion/react';
+import {AnimatePresence, MotionConfig, motion} from 'motion/react';
 import Dashboard from './components/Dashboard';
 import ConsentBanner from './components/ConsentBanner';
 import InstallPrompt from './components/InstallPrompt';
@@ -114,11 +114,14 @@ export default function App() {
       const dark = settings.theme === 'dark' || (settings.theme === 'system' && media.matches);
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
       document.documentElement.lang = settings.language;
+      document.documentElement.dataset.textSize = settings.textSize;
+      document.documentElement.dataset.contrast = settings.highContrast ? 'high' : 'standard';
+      document.documentElement.dataset.motion = settings.motion;
     };
     applyTheme();
     media.addEventListener('change', applyTheme);
     return () => media.removeEventListener('change', applyTheme);
-  }, [settings.language, settings.theme]);
+  }, [settings.highContrast, settings.language, settings.motion, settings.textSize, settings.theme]);
 
   useEffect(() => configureAnalytics(settings.analyticsConsent), [settings.analyticsConsent]);
 
@@ -204,6 +207,7 @@ export default function App() {
   const stats = calculateStats(records);
 
   return (
+    <MotionConfig reducedMotion={settings.motion === 'off' ? 'always' : 'user'} transition={settings.motion === 'slow' ? {duration: 0.55} : undefined}>
     <div className="mx-auto min-h-[var(--tg-viewport-stable-height,100dvh)] max-w-5xl text-tg-text">
       <AnimatePresence mode="wait">
         {view === 'dashboard' && (
@@ -245,9 +249,10 @@ export default function App() {
           />
         )}
       </AnimatePresence>
-      {settings.analyticsConsent !== 'unknown' ? <PwaUpdatePrompt language={settings.language} /> : null}
-      {settings.analyticsConsent !== 'unknown' ? <InstallPrompt language={settings.language} /> : null}
+      {!activePlan && settings.analyticsConsent !== 'unknown' ? <PwaUpdatePrompt language={settings.language} /> : null}
+      {!activePlan && settings.analyticsConsent !== 'unknown' ? <InstallPrompt language={settings.language} /> : null}
       <ConsentBanner settings={settings} onUpdate={updateSettings} />
     </div>
+    </MotionConfig>
   );
 }

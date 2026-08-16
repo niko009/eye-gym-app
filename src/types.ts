@@ -1,5 +1,7 @@
 export type Language = 'ru' | 'ro' | 'en';
 export type ThemePreference = 'light' | 'dark' | 'system';
+export type TextSizePreference = 'default' | 'large' | 'extra-large';
+export type MotionPreference = 'normal' | 'slow' | 'off';
 export type AuthProvider = 'google' | 'telegram';
 
 export type LocalizedText = Record<Language, string>;
@@ -75,8 +77,12 @@ export interface ReminderTime {
 
 export interface UserSettings {
   voiceEnabled: boolean;
+  voiceOnly: boolean;
   language: Language;
   theme: ThemePreference;
+  textSize: TextSizePreference;
+  highContrast: boolean;
+  motion: MotionPreference;
   reminders: ReminderTime[];
   analyticsConsent: 'unknown' | 'granted' | 'denied';
 }

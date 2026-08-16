@@ -1,4 +1,4 @@
-import type {Language, ThemePreference, UserSettings} from '../types';
+import type {Language, MotionPreference, TextSizePreference, ThemePreference, UserSettings} from '../types';
 
 const SETTINGS_KEY = 'eye_gym_settings_v2';
 const LEGACY_SETTINGS_KEY = 'eye_gym_settings';
@@ -6,8 +6,12 @@ const CHANGE_EVENT = 'eye-gym:settings-changed';
 
 export const defaultSettings: UserSettings = {
   voiceEnabled: true,
+  voiceOnly: false,
   language: 'ru',
   theme: 'system',
+  textSize: 'default',
+  highContrast: false,
+  motion: 'normal',
   reminders: [],
   analyticsConsent: 'unknown',
 };
@@ -20,6 +24,14 @@ function isTheme(value: unknown): value is ThemePreference {
   return value === 'light' || value === 'dark' || value === 'system';
 }
 
+function isTextSize(value: unknown): value is TextSizePreference {
+  return value === 'default' || value === 'large' || value === 'extra-large';
+}
+
+function isMotion(value: unknown): value is MotionPreference {
+  return value === 'normal' || value === 'slow' || value === 'off';
+}
+
 function normalize(value: unknown): UserSettings {
   if (!value || typeof value !== 'object') return defaultSettings;
   const source = value as Partial<UserSettings> & {remindersEnabled?: boolean; reminderTime?: string};
@@ -30,8 +42,12 @@ function normalize(value: unknown): UserSettings {
       : [];
   return {
     voiceEnabled: typeof source.voiceEnabled === 'boolean' ? source.voiceEnabled : defaultSettings.voiceEnabled,
+    voiceOnly: typeof source.voiceOnly === 'boolean' ? source.voiceOnly : defaultSettings.voiceOnly,
     language: isLanguage(source.language) ? source.language : defaultSettings.language,
     theme: isTheme(source.theme) ? source.theme : defaultSettings.theme,
+    textSize: isTextSize(source.textSize) ? source.textSize : defaultSettings.textSize,
+    highContrast: typeof source.highContrast === 'boolean' ? source.highContrast : defaultSettings.highContrast,
+    motion: isMotion(source.motion) ? source.motion : defaultSettings.motion,
     reminders,
     analyticsConsent: source.analyticsConsent === 'granted' || source.analyticsConsent === 'denied'
       ? source.analyticsConsent

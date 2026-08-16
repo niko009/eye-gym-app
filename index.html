@@ -12,9 +12,13 @@
       (() => {
         try {
           const raw = localStorage.getItem('eye_gym_settings_v2');
-          const saved = raw ? JSON.parse(raw).theme : 'system';
+          const settings = raw ? JSON.parse(raw) : {};
+          const saved = settings.theme || 'system';
           const dark = saved === 'dark' || (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
           document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+          document.documentElement.dataset.textSize = settings.textSize || 'default';
+          document.documentElement.dataset.contrast = settings.highContrast ? 'high' : 'standard';
+          document.documentElement.dataset.motion = settings.motion || 'normal';
         } catch {
           document.documentElement.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }

@@ -27,6 +27,7 @@ export async function bootstrapAccount(local: UserSettings): Promise<UserSetting
     return local;
   }
   return {
+    ...local,
     language: remote.language,
     theme: remote.theme,
     voiceEnabled: remote.voiceEnabled,

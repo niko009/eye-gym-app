@@ -1,12 +1,12 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {AnimatePresence, motion} from 'motion/react';
-import {ArrowLeft, BarChart3, Bell, FileText, Languages, LogIn, LogOut, Moon, Plus, Sun, Trash2, UserRound, Volume2} from 'lucide-react';
+import {ALargeSmall, ArrowLeft, BarChart3, Bell, Contrast, FileText, Gauge, Headphones, Languages, LogIn, LogOut, Moon, Plus, Sun, Trash2, UserRound, Volume2} from 'lucide-react';
 import {api} from '../api/client';
 import type {PublicConfig} from '../api/types';
 import {getMessages} from '../i18n';
 import {getTelegramWebApp} from '../platform/telegram';
-import type {Language, SessionState, ThemePreference, UserSettings} from '../types';
+import type {Language, MotionPreference, SessionState, TextSizePreference, ThemePreference, UserSettings} from '../types';
 import AudioPackSettings from './AudioPackSettings';
 
 interface Props {settings: UserSettings; session: SessionState; publicConfig: PublicConfig; reminderStatus: 'idle' | 'saving' | 'enabled' | 'disabled' | 'unsupported' | 'denied' | 'error'; onSessionChange: (session: SessionState) => void; onUpdate: (settings: UserSettings) => void; onClose: () => void; onReset: () => void}
@@ -30,7 +30,14 @@ export default function SettingsView({settings, session, publicConfig, reminderS
         <SettingsSection title={t.appearance}>
           <div className="settings-row"><RowLabel icon={<Languages />} text={t.language} /><div className="segmented">{(['ru', 'ro', 'en'] as Language[]).map((language) => <button type="button" key={language} onClick={() => onUpdate({...settings, language})} className={settings.language === language ? 'selected' : ''}>{language.toUpperCase()}</button>)}</div></div>
           <div className="settings-row items-start"><RowLabel icon={settings.theme === 'dark' ? <Moon /> : <Sun />} text={t.theme} /><div className="segmented flex-wrap justify-end">{(['system', 'light', 'dark'] as ThemePreference[]).map((theme) => <button type="button" key={theme} onClick={() => onUpdate({...settings, theme})} className={settings.theme === theme ? 'selected' : ''}>{theme === 'system' ? t.themeSystem : theme === 'light' ? t.themeLight : t.themeDark}</button>)}</div></div>
-          <div className="settings-row"><RowLabel icon={<Volume2 />} text={t.voice} /><Switch checked={settings.voiceEnabled} label={t.voice} onChange={(voiceEnabled) => onUpdate({...settings, voiceEnabled})} /></div>
+          <div className="settings-row"><RowLabel icon={<Volume2 />} text={t.voice} /><Switch checked={settings.voiceEnabled} label={t.voice} onChange={(voiceEnabled) => onUpdate({...settings, voiceEnabled, voiceOnly: voiceEnabled ? settings.voiceOnly : false})} /></div>
+        </SettingsSection>
+
+        <SettingsSection title={t.accessibility}>
+          <div className="settings-row items-start"><RowLabel icon={<ALargeSmall />} text={t.textSize} /><div className="segmented ml-auto flex-wrap justify-end">{(['default', 'large', 'extra-large'] as TextSizePreference[]).map((textSize) => <button type="button" key={textSize} onClick={() => onUpdate({...settings, textSize})} className={settings.textSize === textSize ? 'selected' : ''}>{textSize === 'default' ? t.textDefault : textSize === 'large' ? t.textLarge : t.textExtraLarge}</button>)}</div></div>
+          <div className="settings-row"><RowLabel icon={<Contrast />} text={t.highContrast} hint={t.highContrastHint} /><Switch checked={settings.highContrast} label={t.highContrast} onChange={(highContrast) => onUpdate({...settings, highContrast})} /></div>
+          <div className="settings-row items-start"><RowLabel icon={<Gauge />} text={t.motion} /><div className="segmented ml-auto flex-wrap justify-end">{(['normal', 'slow', 'off'] as MotionPreference[]).map((motion) => <button type="button" key={motion} onClick={() => onUpdate({...settings, motion})} className={settings.motion === motion ? 'selected' : ''}>{motion === 'normal' ? t.motionNormal : motion === 'slow' ? t.motionSlow : t.motionOff}</button>)}</div></div>
+          <div className="settings-row"><RowLabel icon={<Headphones />} text={t.voiceOnly} hint={t.voiceOnlyHint} /><Switch checked={settings.voiceOnly} label={t.voiceOnly} onChange={(voiceOnly) => onUpdate({...settings, voiceOnly, voiceEnabled: voiceOnly || settings.voiceEnabled})} /></div>
         </SettingsSection>
 
         <SettingsSection title={t.audioPacks}>

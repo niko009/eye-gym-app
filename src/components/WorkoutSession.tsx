@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {AnimatePresence, motion} from 'motion/react';
-import {CheckCircle2, ChevronLeft, Pause, Play, RotateCcw, SkipForward, Volume2, VolumeX, X} from 'lucide-react';
+import {CheckCircle2, ChevronLeft, Headphones, Pause, Play, RotateCcw, SkipForward, Volume2, VolumeX, X} from 'lucide-react';
 import {pauseVoice, speakCue, speakExercise, stopVoice} from '../audio/voice';
 import {EXERCISE_BY_ID, localize} from '../data';
 import {completeWorkout, REST_SECONDS} from '../domain/workouts';
@@ -146,9 +146,15 @@ export default function WorkoutSession({plan, complex, settings, onComplete, onE
             </motion.div>
           ) : (
             <motion.div key={`${state.index}-${currentExercise.id}`} initial={{opacity: 0, y: 18}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -18}} className="w-full text-center">
-              <div className="mx-auto max-w-xl rounded-[3rem] border border-[var(--line)] bg-tg-secondary-bg p-2 shadow-[0_28px_80px_-55px_rgba(7,77,67,.75)]">
-                <ExerciseAnimation type={currentExercise.animationType} />
-              </div>
+              {settings.voiceOnly ? (
+                <div className="mx-auto grid min-h-64 max-w-xl place-items-center rounded-[3rem] border border-[var(--line)] bg-tg-secondary-bg p-8 shadow-[0_28px_80px_-55px_rgba(7,77,67,.75)]">
+                  <div><Headphones aria-hidden="true" className="mx-auto size-16 text-emerald-600" /><p className="mt-5 max-w-sm font-extrabold leading-7 text-tg-hint">{t.voiceOnlyActive}</p></div>
+                </div>
+              ) : (
+                <div className="mx-auto max-w-xl rounded-[3rem] border border-[var(--line)] bg-tg-secondary-bg p-2 shadow-[0_28px_80px_-55px_rgba(7,77,67,.75)]">
+                  <ExerciseAnimation type={currentExercise.animationType} motionPreference={settings.motion} />
+                </div>
+              )}
               <div className="mt-5 text-6xl font-black tabular-nums tracking-tighter sm:text-7xl">{formatTimer(seconds)}</div>
               <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-tg-hint sm:text-base">{localize(currentExercise.instruction, settings.language)}</p>
             </motion.div>
