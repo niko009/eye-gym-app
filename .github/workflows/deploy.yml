@@ -200,17 +200,30 @@ jobs:
           set -euo pipefail
           CONTAINER="$(docker ps --format '{{.ID}} {{.Image}} {{.Names}}' | awk 'tolower($0) ~ /caddy/ {print $1; exit}')"
           test -n "$CONTAINER"
+          RUNTIME="$(docker inspect --format '{{.Config.Image}} {{json .Config.Cmd}}' "$CONTAINER")"
+          FLAVOR=file
+          if printf '%s' "$RUNTIME" | grep -qi 'docker-proxy'; then
+            FLAVOR=docker-proxy
+          fi
           CONFIG_SOURCE="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' "$CONTAINER")"
           if [ -z "$CONFIG_SOURCE" ]; then
             CONFIG_DIR="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy"}}{{.Source}}{{end}}{{end}}' "$CONTAINER")"
-            CONFIG_SOURCE="${CONFIG_DIR}/Caddyfile"
+            if [ -n "$CONFIG_DIR" ]; then
+              CONFIG_SOURCE="${CONFIG_DIR}/Caddyfile"
+            fi
           fi
-          sudo test -f "$CONFIG_SOURCE"
+          if [ -z "$CONFIG_SOURCE" ]; then
+            FLAVOR=docker-proxy
+          fi
+          if [ "$FLAVOR" = file ]; then
+            sudo test -f "$CONFIG_SOURCE"
+          fi
           echo "container=$CONTAINER" >> "$GITHUB_OUTPUT"
           echo "config_source=$CONFIG_SOURCE" >> "$GITHUB_OUTPUT"
+          echo "flavor=$FLAVOR" >> "$GITHUB_OUTPUT"
 
       - name: Patch Docker Caddy configuration
-        if: steps.caddy_runtime.outputs.mode == 'docker'
+        if: steps.docker_caddy.outputs.flavor == 'file'
         run: |
           set -euo pipefail
           CONFIG_SOURCE='${{ steps.docker_caddy.outputs.config_source }}'
@@ -220,10 +233,19 @@ jobs:
 
       - name: Connect Docker Caddy to API network
         if: steps.caddy_runtime.outputs.mode == 'docker'
-        run: docker network connect eye-gym_default '${{ steps.docker_caddy.outputs.container }}' 2>/dev/null || true
+        run: |
+          set -euo pipefail
+          CADDY_CONTAINER='${{ steps.docker_caddy.outputs.container }}'
+          API_CONTAINER="$(docker ps --filter label=com.docker.compose.project=eye-gym --filter label=com.docker.compose.service=api --format '{{.ID}}' | head -n 1)"
+          test -n "$API_CONTAINER"
+          while read -r NETWORK; do
+            [ -n "$NETWORK" ] || continue
+            docker network connect "$NETWORK" "$API_CONTAINER" 2>/dev/null || true
+          done < <(docker inspect --format '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' "$CADDY_CONTAINER")
+          docker network connect eye-gym_default "$CADDY_CONTAINER" 2>/dev/null || true
 
       - name: Validate and reload Docker Caddy
-        if: steps.caddy_runtime.outputs.mode == 'docker'
+        if: steps.docker_caddy.outputs.flavor == 'file'
         run: |
           set -euo pipefail
           CONTAINER='${{ steps.docker_caddy.outputs.container }}'

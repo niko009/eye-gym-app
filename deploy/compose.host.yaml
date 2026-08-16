@@ -2,3 +2,6 @@ services:
   api:
     ports:
       - "127.0.0.1:18080:8080"
+    labels:
+      caddy: eye-gym.bacus.dev
+      caddy.1_reverse_proxy: "/api/* {{upstreams 8080}}"
