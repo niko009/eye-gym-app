@@ -3,7 +3,7 @@
 ## First production launch
 
 1. Install Docker Engine with the Compose plugin on a Linux host.
-2. Copy `.env.example` to `.env`, fill every required value and point `APP_DOMAIN` DNS to the host.
+2. Copy `.env.example` to `.env`, fill every required value and point `APP_DOMAIN` DNS to the host. On the Bacus production runner, the deploy workflow creates the initial server-only `.env` with random database and session secrets when it is missing. Google, Telegram and Web Push stay disabled until their credentials are added to that file.
 3. Run `docker compose --profile tools run --rm migrate`.
 4. Run `docker compose up -d --wait --wait-timeout 120`.
 5. Verify `https://<APP_DOMAIN>/api/health`, browser installation and the Telegram bot menu launch.

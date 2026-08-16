@@ -109,5 +109,70 @@ jobs:
         if: steps.reverse_proxy.outputs.kind == 'traefik'
         run: 'true'
 
+      - name: Stage API runtime
+        run: |
+          set -euo pipefail
+          RUNTIME=/srv/bacus/apps/eye-gym/runtime
+          mkdir -p "$RUNTIME"
+          find "$RUNTIME" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+          tar \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=server/node_modules \
+            --exclude=dist \
+            --exclude=server/dist \
+            --exclude=.playwright-cli \
+            --exclude=output \
+            -cf - . | tar -xf - -C "$RUNTIME"
+
+      - name: Deploy API, worker and database
+        run: |
+          set -euo pipefail
+          RUNTIME=/srv/bacus/apps/eye-gym/runtime
+          ENV_FILE=/srv/bacus/apps/eye-gym/.env
+          COMPOSE=(docker compose --env-file "$ENV_FILE" -f compose.yaml -f deploy/compose.host.yaml)
+          cd "$RUNTIME"
+          "${COMPOSE[@]}" build api worker migrate
+          "${COMPOSE[@]}" up -d postgres
+          "${COMPOSE[@]}" --profile tools run --rm migrate
+          "${COMPOSE[@]}" up -d api worker backup
+
+          for ATTEMPT in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          "${COMPOSE[@]}" ps
+          exit 1
+
+      - name: Configure Caddy API route and security headers
+        if: steps.reverse_proxy.outputs.kind == 'caddy'
+        run: |
+          set -euo pipefail
+          DOMAIN=eye-gym.bacus.dev
+          CONFIG="$(sudo grep -RIlF "$DOMAIN" /etc/caddy 2>/dev/null | head -n 1)"
+          test -n "$CONFIG"
+          BACKUP="${CONFIG}.eye-gym-backup"
+          sudo cp "$CONFIG" "$BACKUP"
+          sudo python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG" "$DOMAIN"
+          if ! sudo caddy validate --config "$CONFIG"; then
+            sudo cp "$BACKUP" "$CONFIG"
+            exit 1
+          fi
+          sudo systemctl reload caddy
+          rm -f "$BACKUP" 2>/dev/null || sudo rm -f "$BACKUP"
+
+      - name: Verify public API
+        run: |
+          set -euo pipefail
+          for ATTEMPT in $(seq 1 20); do
+            if curl --fail --silent https://eye-gym.bacus.dev/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
+
       - name: Deployment summary
-        run: echo "Eye Gym deployed to /srv/bacus/apps/eye-gym/site"
+        run: echo "Eye Gym web and API deployed successfully"
