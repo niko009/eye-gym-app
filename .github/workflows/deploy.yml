@@ -81,12 +81,14 @@ jobs:
         run: |
           set -euo pipefail
           KIND=none
-          if grep -RIlF '/srv/bacus/apps/eye-gym/site' /etc/nginx/sites-enabled /etc/nginx/conf.d >/dev/null 2>&1; then
+          if systemctl is-active --quiet nginx 2>/dev/null || pgrep -x nginx >/dev/null 2>&1; then
             KIND=nginx
-          elif grep -RIlF '/srv/bacus/apps/eye-gym/site' /etc/caddy >/dev/null 2>&1; then
+          elif systemctl is-active --quiet caddy 2>/dev/null || pgrep -x caddy >/dev/null 2>&1; then
             KIND=caddy
-          elif grep -RIlF '/srv/bacus/apps/eye-gym/site' /etc/apache2/sites-enabled >/dev/null 2>&1; then
+          elif systemctl is-active --quiet apache2 2>/dev/null || pgrep -x apache2 >/dev/null 2>&1; then
             KIND=apache
+          elif docker ps --format '{{.Image}} {{.Names}}' | grep -qi traefik; then
+            KIND=traefik
           fi
           echo "kind=$KIND" >> "$GITHUB_OUTPUT"
           test "$KIND" != none
@@ -101,6 +103,10 @@ jobs:
 
       - name: Reverse proxy is Apache
         if: steps.reverse_proxy.outputs.kind == 'apache'
+        run: 'true'
+
+      - name: Reverse proxy is Traefik
+        if: steps.reverse_proxy.outputs.kind == 'traefik'
         run: 'true'
 
       - name: Deployment summary
