@@ -1,49 +1,95 @@
-export enum Category {
-  BASIC = "Базовое движение",
-  RELAX = "Расслабление",
-  ACCOMMODATION = "Аккомодация",
-  COORDINATION = "Координация",
-  ADVANCED_ACCOMMODATION = "Продвинутая аккомодация",
-  CONVERGENCE = "Конвергенция",
-  TONUS = "Тонус",
-}
+export type Language = 'ru' | 'ro' | 'en';
+export type ThemePreference = 'light' | 'dark' | 'system';
+export type AuthProvider = 'google' | 'telegram';
+
+export type LocalizedText = Record<Language, string>;
+
+export type AnimationType =
+  | 'up-down'
+  | 'left-right'
+  | 'diagonal-x'
+  | 'circle'
+  | 'blink'
+  | 'focus'
+  | 'square'
+  | 'snake'
+  | 'palming'
+  | 'focus-zoom'
+  | 'butterfly'
+  | 'infinity'
+  | 'nose-writing'
+  | 'cross'
+  | 'blink-squeeze'
+  | 'malyshev-switches'
+  | 'malyshev-convergence'
+  | 'malyshev-circle';
 
 export interface Exercise {
   id: string;
-  name: string;
-  nameRo: string;
-  instruction: string;
-  instructionRo: string;
-  category: Category;
-  duration: number; // in seconds
-  isPro: boolean;
-  animationType: 'up-down' | 'left-right' | 'diagonal-x' | 'circle' | 'blink' | 'focus' | 'square' | 'snake' | 'palming' | 'focus-zoom' | 'cross' | 'blink-squeeze';
+  name: LocalizedText;
+  instruction: LocalizedText;
+  category: 'movement' | 'relaxation' | 'accommodation' | 'coordination' | 'method';
+  durationSeconds: number;
+  animationType: AnimationType;
 }
 
 export interface Complex {
   id: string;
-  name: string;
-  nameRo: string;
-  description: string;
-  descriptionRo: string;
-  exercises: string[]; // ids
-  isPro: boolean;
-  durationTotal: number; // in minutes
+  name: LocalizedText;
+  description: LocalizedText;
+  advertisedMinutes: number;
+  selection:
+    | {type: 'fixed'; exerciseIds: string[]}
+    | {type: 'random'; pool: 'all' | 'premium' | 'mixed'; count: number};
+}
+
+export interface WorkoutPlan {
+  id: string;
+  complexId: string;
+  exerciseIds: string[];
+  startedAt: string;
+  language: Language;
+}
+
+export interface WorkoutRecord extends WorkoutPlan {
+  completedAt: string;
+  durationSeconds: number;
+  syncedAt: string | null;
 }
 
 export interface UserStats {
-  streak: number;
-  lastWorkoutDate: string | null;
-  totalTimeMinutes: number;
+  currentStreak: number;
+  bestStreak: number;
+  totalTimeSeconds: number;
   completedWorkouts: number;
-  popularComplexId: string | null;
+  favoriteComplexId: string | null;
   complexCounts: Record<string, number>;
+  lastWorkoutAt: string | null;
+}
+
+export interface ReminderTime {
+  id: string;
+  localTime: string;
+  enabled: boolean;
 }
 
 export interface UserSettings {
   voiceEnabled: boolean;
-  remindersEnabled: boolean;
-  reminderTime: string; // "HH:mm"
-  isPro: boolean;
-  language: 'ru' | 'ro';
+  language: Language;
+  theme: ThemePreference;
+  reminders: ReminderTime[];
+  analyticsConsent: 'unknown' | 'granted' | 'denied';
+}
+
+export interface UserProfile {
+  id: string;
+  provider: AuthProvider;
+  displayName: string;
+  email: string | null;
+  avatarUrl: string | null;
+}
+
+export interface SessionState {
+  status: 'loading' | 'guest' | 'authenticated';
+  user: UserProfile | null;
 }

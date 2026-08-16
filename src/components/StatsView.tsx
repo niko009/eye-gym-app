@@ -1,121 +1,140 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { X, Trophy, TrendingUp, History, Star } from 'lucide-react';
-import { UserStats, UserSettings } from '../types';
-import { COMPLEXES } from '../data';
+import {useState} from 'react';
+import type {ReactNode} from 'react';
+import {ArrowLeft, CalendarDays, Clock3, Flame, History, Star, Trophy} from 'lucide-react';
+import {COMPLEX_BY_ID, localize} from '../data';
+import {getMessages} from '../i18n';
+import type {UserSettings, UserStats, WorkoutRecord} from '../types';
 
-interface Props {
-  stats: UserStats;
-  settings: UserSettings;
-  onClose: () => void;
-}
+interface Props {records: WorkoutRecord[]; stats: UserStats; settings: UserSettings; onClose: () => void}
+type Period = 'days' | 'weeks' | 'months';
 
-const translations = {
-  ru: {
-    title: 'Статистика',
-    streak: '🔥 Стрик',
-    totalMin: 'Всего мин.',
-    popular: 'Популярная программа',
-    noData: 'Нет данных. Начните тренировку!',
-    timesDone: (count: number) => `Выполнено ${count} раз`,
-    achievements: 'Достижения',
-    totalSessions: 'Всего сессий',
-    avgTime: 'Среднее время',
-    minText: 'мин',
-    toMain: 'На главную',
-  },
-  ro: {
-    title: 'Statistici',
-    streak: '🔥 Zile la rând',
-    totalMin: 'Minute în total',
-    popular: 'Program Popular',
-    noData: 'Nu există date. Începeți antrenamentul!',
-    timesDone: (count: number) => `Finalizat de ${count} ori`,
-    achievements: 'Realizări',
-    totalSessions: 'Total sesiuni',
-    avgTime: 'Timp mediu',
-    minText: 'min',
-    toMain: 'Acasă',
-  }
-};
-
-export default function StatsView({ stats, settings, onClose }: Props) {
-  const t = translations[settings.language || 'ru'] || translations.ru;
-  const popularComplex = COMPLEXES.find(c => c.id === stats.popularComplexId);
+export default function StatsView({records, stats, settings, onClose}: Props) {
+  const t = getMessages(settings.language);
+  const [period, setPeriod] = useState<Period>('days');
+  const favorite = stats.favoriteComplexId ? COMPLEX_BY_ID.get(stats.favoriteComplexId) : null;
+  const chart = buildChart(records, period, settings.language);
+  const maximum = Math.max(1, ...chart.map((point) => point.value));
 
   return (
-    <div className="fixed inset-0 bg-tg-bg z-50 flex flex-col pt-safe px-6">
-      <header className="py-6 flex items-center justify-between border-b border-emerald-500/10">
-        <h1 className="text-2xl font-black text-tg-text tracking-tight">{t.title}</h1>
-        <button onClick={onClose} className="p-3 bg-tg-secondary-bg border border-emerald-500/10 rounded-2xl text-tg-hint hover:text-tg-text transition-colors shadow-sm">
-          <X size={24} />
-        </button>
+    <div className="min-h-[var(--tg-viewport-stable-height,100dvh)] px-5 pb-14 pt-safe sm:px-8">
+      <header className="mx-auto flex max-w-4xl items-center gap-4 py-5">
+        <button type="button" aria-label={t.backHome} onClick={onClose} className="interactive-icon"><ArrowLeft size={21} /></button>
+        <div><p className="eyebrow">Eye Gym</p><h1 className="text-2xl font-black tracking-tight">{t.statsTitle}</h1></div>
       </header>
- 
-      <main className="flex-1 overflow-y-auto py-8">
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-tg-secondary-bg p-6 rounded-[32px] border border-emerald-500/10 shadow-sm">
-            <Trophy className="text-orange-500 mb-2" size={24} />
-            <div className="text-3xl font-black text-tg-text">{stats.streak}</div>
-            <div className="text-[10px] text-tg-hint font-bold uppercase tracking-widest">{t.streak}</div>
+
+      <main className="mx-auto max-w-4xl space-y-5">
+        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard icon={<Flame />} value={stats.currentStreak} label={t.currentStreak} accent="orange" />
+          <StatCard icon={<Trophy />} value={stats.bestStreak} label={t.bestStreak} accent="sky" />
+          <StatCard icon={<Clock3 />} value={`${Math.round(stats.totalTimeSeconds / 60)}`} label={t.totalTime} accent="emerald" />
+          <StatCard icon={<History />} value={stats.completedWorkouts} label={t.sessions} accent="violet" />
+        </section>
+
+        <section className="surface-card p-5 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div><p className="eyebrow">{t.activity}</p><h2 className="mt-1 text-xl font-black">{t.completed}</h2></div>
+            <div className="flex rounded-xl bg-slate-500/10 p-1 text-xs font-black">
+              {(['days', 'weeks', 'months'] as const).map((value) => (
+                <button key={value} type="button" onClick={() => setPeriod(value)} className={`rounded-lg px-3 py-2 transition ${period === value ? 'bg-tg-secondary-bg text-emerald-700 shadow-sm dark:text-emerald-300' : 'text-tg-hint'}`}>
+                  {periodLabel(value, settings.language)}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="bg-tg-secondary-bg p-6 rounded-[32px] border border-emerald-500/10 shadow-sm">
-            <TrendingUp className="text-emerald-500 mb-2" size={24} />
-            <div className="text-3xl font-black text-tg-text">{stats.totalTimeMinutes}</div>
-            <div className="text-[10px] text-tg-hint font-bold uppercase tracking-widest">{t.totalMin}</div>
-          </div>
-        </div>
- 
-        <section className="mb-8">
-           <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-             <Star size={12} /> {t.popular}
-           </h2>
-           {popularComplex ? (
-              <div className="bg-emerald-500 p-6 rounded-[32px] text-white shadow-lg shadow-emerald-500/20">
-                <h3 className="text-xl font-bold mb-1">
-                  {settings.language === 'ro' ? popularComplex.nameRo : popularComplex.name}
-                </h3>
-                <p className="text-emerald-50 text-sm mb-4 line-clamp-2">
-                  {settings.language === 'ro' ? popularComplex.descriptionRo : popularComplex.description}
-                </p>
-                <div className="inline-flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  {t.timesDone(stats.complexCounts[popularComplex.id])}
+          <div className="flex h-44 items-end gap-1.5" role="img" aria-label={t.activity}>
+            {chart.map((point) => (
+              <div key={point.key} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                <span className="text-[10px] font-black text-tg-hint">{point.value || ''}</span>
+                <div title={`${point.label}: ${point.value}`} className="w-full min-w-1 rounded-t-lg bg-emerald-500/20">
+                  <div className="w-full rounded-t-lg bg-emerald-500 transition-all" style={{height: `${Math.max(point.value ? 10 : 3, (point.value / maximum) * 118)}px`}} />
                 </div>
+                <span className="max-w-full truncate text-[9px] font-bold text-tg-hint">{point.label}</span>
               </div>
-           ) : (
-             <div className="bg-tg-secondary-bg p-8 rounded-[32px] text-center border border-emerald-500/10">
-               <p className="text-tg-hint text-sm font-medium">{t.noData}</p>
-             </div>
-           )}
-        </section>
- 
-        <section>
-          <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <History size={12} /> {t.achievements}
-          </h2>
-          <div className="space-y-3">
-             <div className="flex items-center justify-between p-5 bg-tg-secondary-bg border border-emerald-500/10 rounded-3xl shadow-sm">
-                <span className="text-sm font-bold text-tg-hint">{t.totalSessions}</span>
-                <span className="text-lg font-black text-tg-text">{stats.completedWorkouts}</span>
-             </div>
-             <div className="flex items-center justify-between p-5 bg-tg-secondary-bg border border-emerald-500/10 rounded-3xl shadow-sm">
-                <span className="text-sm font-bold text-tg-hint">{t.avgTime}</span>
-                <span className="text-lg font-black text-tg-text">
-                   {stats.completedWorkouts > 0 ? Math.round(stats.totalTimeMinutes / stats.completedWorkouts) : 0} {t.minText}
-                </span>
-             </div>
+            ))}
           </div>
         </section>
+
+        <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+          <section className="surface-card p-5 sm:p-6">
+            <p className="eyebrow"><Star className="mr-1 inline" size={13} />{t.favorite}</p>
+            {favorite ? (
+              <div className="mt-5 rounded-[1.75rem] bg-emerald-600 p-5 text-white shadow-lg shadow-emerald-900/15">
+                <h2 className="text-xl font-black">{localize(favorite.name, settings.language)}</h2>
+                <p className="mt-2 text-sm leading-5 text-emerald-50">{localize(favorite.description, settings.language)}</p>
+                <span className="mt-4 inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-black">{t.times(stats.complexCounts[favorite.id])}</span>
+              </div>
+            ) : <Empty text={t.noData} />}
+
+            <p className="eyebrow mt-7"><CalendarDays className="mr-1 inline" size={13} />{t.activity}</p>
+            <div className="mt-4 grid grid-cols-7 gap-1.5" aria-label={t.activity}>
+              {buildCalendar(records).map((day) => <div key={day.key} title={`${day.key}: ${day.count}`} className={`aspect-square rounded-md ${day.count === 0 ? 'bg-slate-500/8' : day.count === 1 ? 'bg-emerald-300 dark:bg-emerald-800' : day.count === 2 ? 'bg-emerald-500' : 'bg-emerald-700'}`} />)}
+            </div>
+          </section>
+
+          <section className="surface-card p-5 sm:p-6">
+            <p className="eyebrow">{t.history}</p>
+            {records.length === 0 ? <Empty text={t.noData} /> : (
+              <ol className="mt-4 max-h-[30rem] space-y-2 overflow-y-auto pr-1">
+                {records.map((record) => {
+                  const complex = COMPLEX_BY_ID.get(record.complexId);
+                  return (
+                    <li key={record.id} className="flex items-center justify-between gap-4 rounded-2xl border border-[var(--line)] bg-tg-bg/60 p-4">
+                      <div className="min-w-0"><p className="truncate font-extrabold">{complex ? localize(complex.name, settings.language) : record.complexId}</p><time className="mt-1 block text-xs text-tg-hint">{new Intl.DateTimeFormat(settings.language, {dateStyle: 'medium', timeStyle: 'short'}).format(new Date(record.completedAt))}</time></div>
+                      <span className="shrink-0 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-black text-emerald-700 dark:text-emerald-300">{Math.round(record.durationSeconds / 60)} {t.minuteShort}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </section>
+        </div>
       </main>
- 
-      <div className="py-8">
-        <button
-          onClick={onClose}
-          className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/20"
-        >
-          {t.toMain}
-        </button>
-      </div>
     </div>
   );
+}
+
+function StatCard({icon, value, label, accent}: {icon: ReactNode; value: string | number; label: string; accent: 'orange' | 'sky' | 'emerald' | 'violet'}) {
+  const colors = {orange: 'text-orange-500 bg-orange-500/10', sky: 'text-sky-500 bg-sky-500/10', emerald: 'text-emerald-600 bg-emerald-500/10', violet: 'text-violet-500 bg-violet-500/10'};
+  return <div className="surface-card p-4 sm:p-5"><div className={`mb-4 grid size-10 place-items-center rounded-2xl ${colors[accent]}`}>{icon}</div><div className="text-3xl font-black tabular-nums">{value}</div><div className="mt-1 text-[10px] font-black uppercase tracking-widest text-tg-hint">{label}</div></div>;
+}
+
+function Empty({text}: {text: string}) {return <p className="mt-5 rounded-2xl border border-dashed border-[var(--line)] p-6 text-center text-sm leading-6 text-tg-hint">{text}</p>}
+
+function dayKey(date: Date): string {return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`}
+
+function buildCalendar(records: WorkoutRecord[]) {
+  const counts = new Map<string, number>();
+  for (const record of records) {const key = dayKey(new Date(record.completedAt)); counts.set(key, (counts.get(key) ?? 0) + 1)}
+  return Array.from({length: 35}, (_, index) => {const date = new Date(); date.setDate(date.getDate() - 34 + index); const key = dayKey(date); return {key, count: counts.get(key) ?? 0}});
+}
+
+function periodLabel(period: Period, language: UserSettings['language']) {
+  return ({ru: {days: 'Дни', weeks: 'Недели', months: 'Месяцы'}, ro: {days: 'Zile', weeks: 'Săpt.', months: 'Luni'}, en: {days: 'Days', weeks: 'Weeks', months: 'Months'}})[language][period];
+}
+
+function buildChart(records: WorkoutRecord[], period: Period, language: UserSettings['language']) {
+  const now = new Date();
+  const length = period === 'days' ? 14 : period === 'weeks' ? 8 : 6;
+  return Array.from({length}, (_, index) => {
+    const offset = length - 1 - index;
+    let start: Date;
+    let end: Date;
+    let label: string;
+    if (period === 'days') {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+      label = new Intl.DateTimeFormat(language, {day: 'numeric'}).format(start);
+    } else if (period === 'weeks') {
+      const currentMondayOffset = (now.getDay() + 6) % 7;
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - currentMondayOffset - offset * 7);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
+      label = new Intl.DateTimeFormat(language, {day: 'numeric', month: 'short'}).format(start);
+    } else {
+      start = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+      label = new Intl.DateTimeFormat(language, {month: 'short'}).format(start);
+    }
+    const value = records.filter((record) => {const date = new Date(record.completedAt); return date >= start && date < end}).length;
+    return {key: start.toISOString(), label, value};
+  });
 }

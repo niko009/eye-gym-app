@@ -1,0 +1,409 @@
+{
+  "version": 1,
+  "provider": "edge-tts",
+  "generatorVersion": "7.2.7",
+  "packs": {
+    "ru": {
+      "voice": "ru-RU-SvetlanaNeural",
+      "rate": "+12%",
+      "pitch": "-2Hz",
+      "volume": "+0%",
+      "exercises": [
+        {
+          "id": "up-down",
+          "file": "/audio/v1/ru/up-down.mp3",
+          "durationSeconds": 14.856,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Вверх и вниз». Держите голову неподвижно. Медленно поднимите взгляд вверх, а затем плавно опустите вниз. Продолжайте в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "left-right",
+          "file": "/audio/v1/ru/left-right.mp3",
+          "durationSeconds": 12.504,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Вправо-Влево». Медленно двигайте глазами вправо, затем влево. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "diagonal",
+          "file": "/audio/v1/ru/diagonal.mp3",
+          "durationSeconds": 15.36,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Диагональ». Посмотрите в верхний правый угол, затем в нижний левый. Повторите для другой диагонали. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "circle",
+          "file": "/audio/v1/ru/circle.mp3",
+          "durationSeconds": 12.888,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Круг». Медленно вращайте глазами по часовой стрелке, затем против. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "blink",
+          "file": "/audio/v1/ru/blink.mp3",
+          "durationSeconds": 8.208,
+          "exerciseDurationSeconds": 10,
+          "text": "Упражнение «Частое моргание». Быстро моргайте в течение 10 секунд. Не напрягайте глаза."
+        },
+        {
+          "id": "focus",
+          "file": "/audio/v1/ru/focus.mp3",
+          "durationSeconds": 13.128,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Фокусировка». Сфокусируйтесь на пальце перед носом, затем на дальнем объекте. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "square",
+          "file": "/audio/v1/ru/square.mp3",
+          "durationSeconds": 15.696,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Схема «Квадрат»». Проведите глазами по контуру воображаемого квадрата. Четыре точки фиксации. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "snake",
+          "file": "/audio/v1/ru/snake.mp3",
+          "durationSeconds": 14.304,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Схема «Змейка»». Двигайте глазами по горизонтальной волнистой траектории, затем обратно. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "palming",
+          "file": "/audio/v1/ru/palming.mp3",
+          "durationSeconds": 9.216,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Пальминг». Разотрите ладони до тепла и приложите к закрытым глазам. Расслабьтесь и дышите ровно."
+        },
+        {
+          "id": "focus-approach",
+          "file": "/audio/v1/ru/focus-approach.mp3",
+          "durationSeconds": 14.256,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Фокусировка с приближением». Вытяните палец и медленно приближайте его к носу, не теряя фокус. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "butterfly",
+          "file": "/audio/v1/ru/butterfly.mp3",
+          "durationSeconds": 8.952,
+          "exerciseDurationSeconds": 20,
+          "text": "Упражнение «Бабочка». Легко и очень быстро моргайте, словно бабочка машет крыльями. Не напрягайте глаза."
+        },
+        {
+          "id": "infinity",
+          "file": "/audio/v1/ru/infinity.mp3",
+          "durationSeconds": 13.032,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Бесконечность». Плавно обводите глазами знак бесконечности в обе стороны. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "nose-writing",
+          "file": "/audio/v1/ru/nose-writing.mp3",
+          "durationSeconds": 12.24,
+          "exerciseDurationSeconds": 30,
+          "text": "Упражнение «Письмо носом». Закройте глаза. Представьте, что нос — карандаш, и напишите им в воздухе алфавит. Расслабьтесь и дышите ровно."
+        },
+        {
+          "id": "malyshev-switches",
+          "file": "/audio/v1/ru/malyshev-switches.mp3",
+          "durationSeconds": 16.536,
+          "exerciseDurationSeconds": 70,
+          "text": "Упражнение «Горизонтальные и вертикальные переключения». Поднимите большие пальцы на ширине плеч. Переводите взгляд справа налево 30 раз, затем вверх-вниз 30 раз. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "malyshev-convergence",
+          "file": "/audio/v1/ru/malyshev-convergence.mp3",
+          "durationSeconds": 18.168,
+          "exerciseDurationSeconds": 70,
+          "text": "Упражнение «Раздельное сведение к переносице». Прикройте один глаз. Медленно приближайте палец противоположной руки к переносице 10 раз, затем поменяйте сторону. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        },
+        {
+          "id": "malyshev-circle",
+          "file": "/audio/v1/ru/malyshev-circle.mp3",
+          "durationSeconds": 16.248,
+          "exerciseDurationSeconds": 80,
+          "text": "Упражнение «Слежение по круговой траектории». Следите за большим пальцем по кругу: 10 раз по часовой стрелке и 10 против, затем поменяйте руку. Выполняйте движение плавно, в удобном темпе. Не напрягайтесь и дышите ровно."
+        }
+      ],
+      "cues": [
+        {
+          "id": "rest",
+          "file": "/audio/v1/ru/rest.mp3",
+          "durationSeconds": 5.472,
+          "text": "Отдых. Расслабьте глаза и приготовьтесь к следующему упражнению."
+        },
+        {
+          "id": "finished",
+          "file": "/audio/v1/ru/finished.mp3",
+          "durationSeconds": 4.176,
+          "text": "Тренировка завершена. Отличная работа!"
+        }
+      ]
+    },
+    "ro": {
+      "voice": "ro-RO-AlinaNeural",
+      "rate": "+12%",
+      "pitch": "-2Hz",
+      "volume": "+0%",
+      "exercises": [
+        {
+          "id": "up-down",
+          "file": "/audio/v1/ro/up-down.mp3",
+          "durationSeconds": 13.416,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul sus și jos. Țineți capul nemișcat. Ridicați încet privirea, apoi coborâți-o lin. Continuați într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "left-right",
+          "file": "/audio/v1/ro/left-right.mp3",
+          "durationSeconds": 12.36,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Stânga-Dreapta”. Mișcați încet ochii la dreapta, apoi la stânga. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "diagonal",
+          "file": "/audio/v1/ro/diagonal.mp3",
+          "durationSeconds": 15.6,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Diagonală”. Priviți în colțul din dreapta sus, apoi în cel din stânga jos. Repetați pentru cealaltă diagonală. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "circle",
+          "file": "/audio/v1/ro/circle.mp3",
+          "durationSeconds": 12.744,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Cerc”. Rotiți încet ochii în sensul acelor de ceasornic, apoi invers. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "blink",
+          "file": "/audio/v1/ro/blink.mp3",
+          "durationSeconds": 7.224,
+          "exerciseDurationSeconds": 10,
+          "text": "Exercițiul „Clipit des”. Clipiți rapid timp de 10 secunde. Nu vă încordați ochii."
+        },
+        {
+          "id": "focus",
+          "file": "/audio/v1/ro/focus.mp3",
+          "durationSeconds": 13.488,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Focalizare”. Concentrați-vă pe degetul din fața nasului, apoi pe un obiect îndepărtat. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "square",
+          "file": "/audio/v1/ro/square.mp3",
+          "durationSeconds": 14.304,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Schema „Pătrat””. Urmăriți cu ochii conturul unui pătrat imaginar. Patru puncte de fixare. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "snake",
+          "file": "/audio/v1/ro/snake.mp3",
+          "durationSeconds": 13.848,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Schema „Șarpe””. Mișcați ochii de-a lungul unei traiectorii ondulate orizontale, apoi înapoi. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "palming",
+          "file": "/audio/v1/ro/palming.mp3",
+          "durationSeconds": 9.912,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Palming”. Frecați palmele până se încălzesc, apoi așezați-le peste ochii închiși. Relaxați-vă și respirați normal."
+        },
+        {
+          "id": "focus-approach",
+          "file": "/audio/v1/ro/focus-approach.mp3",
+          "durationSeconds": 14.136,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Focalizare cu apropiere”. Întindeți degetul și apropiați-l încet de nas, menținând focalizarea. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "butterfly",
+          "file": "/audio/v1/ro/butterfly.mp3",
+          "durationSeconds": 8.52,
+          "exerciseDurationSeconds": 20,
+          "text": "Exercițiul „Fluturele”. Clipiți ușor și foarte rapid, ca un fluture care dă din aripi. Nu vă încordați ochii."
+        },
+        {
+          "id": "infinity",
+          "file": "/audio/v1/ro/infinity.mp3",
+          "durationSeconds": 12.264,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Infinit”. Desenați lin simbolul infinitului cu ochii în ambele direcții. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "nose-writing",
+          "file": "/audio/v1/ro/nose-writing.mp3",
+          "durationSeconds": 11.544,
+          "exerciseDurationSeconds": 30,
+          "text": "Exercițiul „Scrisul cu nasul”. Închideți ochii. Imaginați-vă că nasul este un creion și scrieți alfabetul în aer. Relaxați-vă și respirați normal."
+        },
+        {
+          "id": "malyshev-switches",
+          "file": "/audio/v1/ro/malyshev-switches.mp3",
+          "durationSeconds": 18.0,
+          "exerciseDurationSeconds": 70,
+          "text": "Exercițiul „Comutări orizontale și verticale”. Ridicați degetele mari la lățimea umerilor. Mutați privirea dreapta-stânga de 30 de ori, apoi sus-jos de 30 de ori. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "malyshev-convergence",
+          "file": "/audio/v1/ro/malyshev-convergence.mp3",
+          "durationSeconds": 16.392,
+          "exerciseDurationSeconds": 70,
+          "text": "Exercițiul „Convergență separată spre nas”. Acoperiți un ochi. Apropiați încet degetul mâinii opuse de nas de 10 ori, apoi schimbați partea. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        },
+        {
+          "id": "malyshev-circle",
+          "file": "/audio/v1/ro/malyshev-circle.mp3",
+          "durationSeconds": 16.08,
+          "exerciseDurationSeconds": 80,
+          "text": "Exercițiul „Urmărire circulară”. Urmăriți degetul mare în cerc: de 10 ori în sensul acelor de ceasornic și de 10 ori invers, apoi schimbați mâna. Faceți mișcarea lin, într-un ritm confortabil. Nu vă încordați și respirați normal."
+        }
+      ],
+      "cues": [
+        {
+          "id": "rest",
+          "file": "/audio/v1/ro/rest.mp3",
+          "durationSeconds": 5.304,
+          "text": "Pauză. Relaxați ochii și pregătiți-vă pentru următorul exercițiu."
+        },
+        {
+          "id": "finished",
+          "file": "/audio/v1/ro/finished.mp3",
+          "durationSeconds": 3.84,
+          "text": "Antrenamentul s-a încheiat. Excelent!"
+        }
+      ]
+    },
+    "en": {
+      "voice": "en-US-JennyNeural",
+      "rate": "+12%",
+      "pitch": "-2Hz",
+      "volume": "+0%",
+      "exercises": [
+        {
+          "id": "up-down",
+          "file": "/audio/v1/en/up-down.mp3",
+          "durationSeconds": 11.544,
+          "exerciseDurationSeconds": 30,
+          "text": "Up and down. Keep your head still. Slowly raise your eyes, then gently lower them. Continue at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "left-right",
+          "file": "/audio/v1/en/left-right.mp3",
+          "durationSeconds": 10.08,
+          "exerciseDurationSeconds": 30,
+          "text": "Left-Right. Slowly move your eyes to the right, then to the left. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "diagonal",
+          "file": "/audio/v1/en/diagonal.mp3",
+          "durationSeconds": 12.096,
+          "exerciseDurationSeconds": 30,
+          "text": "Diagonal. Look at the top-right corner, then the bottom-left. Repeat for the other diagonal. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "circle",
+          "file": "/audio/v1/en/circle.mp3",
+          "durationSeconds": 10.536,
+          "exerciseDurationSeconds": 30,
+          "text": "Circle. Slowly rotate your eyes clockwise, then counterclockwise. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "blink",
+          "file": "/audio/v1/en/blink.mp3",
+          "durationSeconds": 6.192,
+          "exerciseDurationSeconds": 10,
+          "text": "Frequent Blinking. Blink quickly for 10 seconds. Keep your eyes relaxed."
+        },
+        {
+          "id": "focus",
+          "file": "/audio/v1/en/focus.mp3",
+          "durationSeconds": 10.776,
+          "exerciseDurationSeconds": 30,
+          "text": "Focus. Focus on your finger in front of your nose, then on a distant object. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "square",
+          "file": "/audio/v1/en/square.mp3",
+          "durationSeconds": 12.6,
+          "exerciseDurationSeconds": 30,
+          "text": "Square Pattern. Trace the outline of an imaginary square with your eyes. Use four fixation points. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "snake",
+          "file": "/audio/v1/en/snake.mp3",
+          "durationSeconds": 10.656,
+          "exerciseDurationSeconds": 30,
+          "text": "Snake Pattern. Move your eyes along a horizontal wavy path, then back. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "palming",
+          "file": "/audio/v1/en/palming.mp3",
+          "durationSeconds": 7.584,
+          "exerciseDurationSeconds": 30,
+          "text": "Palming. Rub your palms until warm, then place them over your closed eyes. Relax and breathe naturally."
+        },
+        {
+          "id": "focus-approach",
+          "file": "/audio/v1/en/focus-approach.mp3",
+          "durationSeconds": 11.328,
+          "exerciseDurationSeconds": 30,
+          "text": "Focus Approach. Extend your finger and slowly bring it toward your nose while maintaining focus. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "butterfly",
+          "file": "/audio/v1/en/butterfly.mp3",
+          "durationSeconds": 7.512,
+          "exerciseDurationSeconds": 20,
+          "text": "Butterfly. Blink lightly and quickly, like a butterfly flapping its wings. Keep your eyes relaxed."
+        },
+        {
+          "id": "infinity",
+          "file": "/audio/v1/en/infinity.mp3",
+          "durationSeconds": 10.728,
+          "exerciseDurationSeconds": 30,
+          "text": "Infinity. Smoothly trace the infinity symbol with your eyes in both directions. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "nose-writing",
+          "file": "/audio/v1/en/nose-writing.mp3",
+          "durationSeconds": 9.216,
+          "exerciseDurationSeconds": 30,
+          "text": "Nose Writing. Close your eyes. Imagine your nose is a pencil and write the alphabet in the air. Relax and breathe naturally."
+        },
+        {
+          "id": "malyshev-switches",
+          "file": "/audio/v1/en/malyshev-switches.mp3",
+          "durationSeconds": 14.784,
+          "exerciseDurationSeconds": 70,
+          "text": "Horizontal and Vertical Switches. Raise both thumbs shoulder-width apart. Switch your gaze right-to-left 30 times, then up-and-down 30 times. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "malyshev-convergence",
+          "file": "/audio/v1/en/malyshev-convergence.mp3",
+          "durationSeconds": 14.136,
+          "exerciseDurationSeconds": 70,
+          "text": "Separate Nose Convergence. Cover one eye. Slowly bring the opposite thumb toward the bridge of your nose 10 times, then switch sides. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        },
+        {
+          "id": "malyshev-circle",
+          "file": "/audio/v1/en/malyshev-circle.mp3",
+          "durationSeconds": 12.84,
+          "exerciseDurationSeconds": 80,
+          "text": "Circular Tracking. Follow your thumb in a circle: 10 times clockwise and 10 counterclockwise, then switch hands. Move smoothly at a comfortable pace. Stay relaxed and breathe naturally."
+        }
+      ],
+      "cues": [
+        {
+          "id": "rest",
+          "file": "/audio/v1/en/rest.mp3",
+          "durationSeconds": 4.872,
+          "text": "Rest. Relax your eyes and get ready for the next exercise."
+        },
+        {
+          "id": "finished",
+          "file": "/audio/v1/en/finished.mp3",
+          "durationSeconds": 3.264,
+          "text": "Workout complete. Great work!"
+        }
+      ]
+    }
+  }
+}

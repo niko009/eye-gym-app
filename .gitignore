@@ -2,7 +2,25 @@ node_modules/
 build/
 dist/
 coverage/
+/.playwright-cli/
+/dev-dist/
+/output/
+__pycache__/
+*.pyc
 .DS_Store
 *.log
 .env*
 !.env.example
+
+# Android checkout artifacts that coexist in this shared worktree
+/.gradle/
+/.idea/
+/.kotlin/
+/app/
+/*.hprof
+/local.properties
+/sing_key
+
+# Runtime data
+/backups/
+/data/

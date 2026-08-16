@@ -1,122 +1,107 @@
-<!--
-Sync Impact Report
-
-Version change: [CONSTITUTION_VERSION] -> 1.0.0
-
-Modified principles:
-- [PRINCIPLE_1_NAME] -> Telegram-Native UX
-- [PRINCIPLE_2_NAME] -> Privacy by Design
-- [PRINCIPLE_3_NAME] -> Multilingual Compliance
-- [PRINCIPLE_4_NAME] -> Monetization Boundaries
-- [PRINCIPLE_5_NAME] -> Reliability & Simplicity
-- (added) PRINCIPLE_6 -> User Autonomy
-- (added) PRINCIPLE_7 -> Transparency
-
-Added sections:
-- Development Constraints (replaces SECTION_2)
-- Development Workflow & Quality Gates (replaces SECTION_3)
-
-Removed sections: none
-
-Templates requiring updates:
-- .specify/templates/plan-template.md ✅ updated
-- .specify/templates/spec-template.md ✅ updated
-- .specify/templates/tasks-template.md ✅ updated
-- .specify/templates/commands/ ⚠ not present - skipped
-
-Deferred items / TODOs:
-- RATIFICATION_DATE: TODO(RATIFICATION_DATE): confirm original adoption date
--->
-
-# Eye Gym (Telegram Web App) Constitution
+# Eye Gym Web/PWA and Telegram Mini App Constitution
 
 ## Core Principles
 
-### Telegram-Native UX
-UI MUST follow Telegram’s design language and interaction model. Implementations MUST use the
-Telegram Web App SDK for theming, alerts, navigation, and native header/footer controls. The
-Web App MUST NOT implement custom navigation bars or persistent chrome that duplicates Telegram
-controls. Rationale: preserve predictable UX and respect host chrome to avoid platform
-conflicts; enforcement is a checklist during reviews and manual QA.
+### I. One Product, Multiple Channels
 
-### Privacy by Design
-Users' privacy is non-negotiable. The project MUST NOT include telemetry, analytics, or
-third-party scripts. User data (for example, reminder preferences or premium-status codes)
-MUST be stored only in `localStorage` or passed explicitly to the bot. No personal data MAY be
-transmitted to external servers under any circumstances. Rationale: minimizes external
-attack surface and aligns with Telegram's expectation of in-chat data custody.
+Eye Gym MUST remain one product and one maintained codebase delivered as a regular website,
+an installable PWA and a Telegram Mini App. Exercises, workout behavior, localization,
+statistics rules and server contracts MUST be shared. Channel-specific behavior MUST stay in
+small platform adapters. The application MUST continue to work in a normal browser when the
+Telegram SDK is unavailable.
 
-### Multilingual Compliance
-The Web App MUST support exactly three languages: English, Russian, Romanian. Language MUST be
-detected from `WebApp.initDataUnsafe.user.language_code`; if detection fails, fallback to
-English. All UI strings MUST be externalized (no hardcoded text). Rationale: limits translation
-surface while ensuring regional coverage; externalized strings allow auditable localization.
+### II. Verified and Separate Identities
 
-### Monetization Boundaries
-Premium content MAY be unlocked only via user-entered codes (e.g., codes from Boosty or
-GitHub Sponsors). The Web App MUST NOT initiate any payment flow inside the Web App; instead,
-it MUST call `openLink()` to navigate users to an external payment or subscription page. The
-Web App MUST NOT use Telegram Payments or any in-app purchase APIs. Rationale: keep billing
-flows auditable and out-of-scope for the Web App to avoid policy and compliance friction.
+Guest, Google and Telegram are distinct identity states. Google identities MUST be accepted
+only after server-side OAuth verification. Telegram identities MUST be accepted only after
+the API validates the original `Telegram.WebApp.initData` signature and `auth_date` with the
+bot token. Client-provided profile data and `initDataUnsafe` MUST NOT establish identity.
 
-### Reliability & Simplicity
-The project MUST be small and dependency-free: total JS bundle size MUST be ≤ 120 KB (gzipped),
-and the codebase MUST avoid third-party dependencies (vanilla JavaScript only). All assets must
-be self-contained (inline SVG, base64-encoded audio where needed). Rationale: keep the app
-fast, auditable, and easy to host inside Telegram’s WebView.
+Google and Telegram identities MUST create separate users in v1. Accounts, settings and
+workout histories MUST NOT be automatically linked, matched or merged by email, name, phone
+or other profile data. Account linking requires a future explicit product specification.
 
-### User Autonomy
-All features, especially push-like features such as reminders, MUST be opt-in. Every permission
-or gate MUST present a clear, plain-language explanation (for example: “Reminders are sent by
-@EyeGymBot — you can disable anytime”). Rationale: empower users and reduce accidental
-engagement or opt-ins.
+### III. Offline-First and Idempotent Data
 
-### Transparency
-A Privacy Policy MUST be accessible via a footer link from the Web App. The policy text MUST
-explicitly state: “We do not collect, store, or transmit your personal data.” Rationale: clear
-communication builds trust and aligns with the Privacy by Design principle.
+Core workouts MUST remain usable without registration. In browser/PWA mode, workout events
+MUST be persisted locally before synchronization and identified by client-generated UUIDs.
+Only completed workouts count toward statistics. Retried synchronization and guest-history
+imports MUST be idempotent. A guest event MUST NOT be imported automatically into both a
+Google and a Telegram profile.
+
+Telegram WebView caching is best-effort and MUST NOT be described as equivalent to an
+installed PWA. Channel limitations must be communicated honestly.
+
+### IV. Privacy, Security and Consent
+
+Secrets, Google credentials and the Telegram bot token MUST remain server-side. Authenticated
+data access MUST be scoped by `user_id`, sessions MUST use opaque Secure, HttpOnly cookies,
+and provider tokens MUST NOT be sent to the browser. Analytics MUST remain disabled until
+valid consent is recorded and MUST NOT include provider subjects, Telegram IDs or workout
+content that identifies a user. Reminders and messaging MUST be opt-in and revocable.
+
+### V. Localization, Accessibility and Product Safety
+
+User-facing functionality MUST support Russian, Romanian and English, with Russian as the
+default unless platform requirements provide a better explicit choice. New strings MUST be
+externalized and translated across all supported languages before release. Interfaces MUST
+target WCAG 2.1 AA and remain mobile-first with desktop support. Product copy MUST present Eye
+Gym as relaxation exercises and MUST NOT make medical treatment or vision-improvement claims.
+
+### VI. Portable and Observable Operations
+
+Production MUST remain self-hosted and portable through Docker Compose. Persistent business
+state MUST stay in PostgreSQL and documented backup volumes. Environment-specific values MUST
+come from server-side environment configuration. API, web, database and deployment paths MUST
+have health checks or equivalent verification. Migrations, backup/restore and rollback paths
+MUST be considered for every data or deployment change.
+
+### VII. Incremental, Testable Delivery
+
+Features MUST be specified as independently testable user outcomes and implemented in small
+increments. Changes MUST preserve browser/PWA and Telegram behavior unless the specification
+explicitly scopes a feature to one channel. Security-sensitive authentication and sync logic
+MUST have automated tests. Every implementation MUST be checked against its specification,
+architecture decisions and acceptance criteria before completion.
 
 ## Development Constraints
-These constraints flow directly from the principles above and are mandatory for all work:
 
-- JavaScript only: zero external runtime dependencies; no bundlers that introduce opaque
-	transitive packages unless they can be audited and kept inline under the bundle size limit.
-- Bundle size: application JS (gzipped) MUST be ≤ 120 KB. This includes any necessary
-	runtime glue; failures must be justified and approved by governance (see Governance).
-- Storage: only `localStorage` or explicit bot-passed state; NO external servers for user data.
-- Localization: all UI strings MUST be stored in a single `i18n` JSON file per language and
-	loaded based on `WebApp.initDataUnsafe.user.language_code`.
-- Payments: all monetization MUST use external links via `openLink()`; no in-app payment APIs.
-- Assets: use inline SVGs and base64 audio; avoid remote asset loading at runtime.
+- Frontend: React, TypeScript and Vite; PWA behavior is provided through the service worker.
+- Backend and worker: Node.js and TypeScript with PostgreSQL.
+- Telegram integration: official Telegram Web App SDK in the client and Telegram Bot API from
+  server-side code only.
+- Authentication identities use a unique `(provider, provider_subject)` key. Provider profile
+  fields are metadata, not cross-provider identity keys.
+- Browser reminders use Web Push; Telegram reminders use bot messages after explicit opt-in.
+- The browser/PWA channel uses Google OAuth; the Telegram channel uses verified `initData`.
+- Application images MUST be immutable and environment secrets MUST never enter Git, frontend
+  bundles, public configuration endpoints or logs.
+- Current product behavior and exclusions are defined by `docs/WEB_PWA_SPEC.md`; runtime
+  boundaries and trust decisions are defined by `docs/ARCHITECTURE.md`.
 
-## Development Workflow & Quality Gates
-The project follows a lightweight workflow with mandatory quality gates derived from the
-constitution:
+## Development Workflow and Quality Gates
 
-1. Constitution Check (automated checklist + PR description): PRs MUST include a short
-	 statement confirming compliance with the seven core principles and list any waivers.
-2. Bundle-size check: PRs that touch frontend assets MUST run the bundle-size measurement and
-	 include artifact proving gzipped size ≤ 120 KB.
-3. Localization check: New UI strings MUST be added only to the externalized locales and
-	 translations MUST include at minimum the English string before merge.
-4. Privacy check: PRs MUST not introduce third-party scripts or external network calls that
-	 transmit user data. Any required external communication must be documented and approved.
+1. Write or update a feature specification describing user value, channel scope, acceptance
+   scenarios, edge cases and measurable success criteria.
+2. Clarify decisions that materially affect identity, privacy, synchronization, offline
+   behavior or the user journey before technical planning.
+3. Create an implementation plan covering frontend, API, persistence, migrations, worker,
+   tests and deployment impact as applicable.
+4. Re-check all seven principles before and after design. Any violation requires an explicit,
+   time-bounded waiver approved through governance.
+5. Generate dependency-ordered tasks grouped into independently testable user stories.
+6. Before implementation, run the read-only consistency analysis across specification, plan
+   and tasks. Resolve all critical constitution conflicts.
+7. During implementation, run relevant lint, type checks, tests and production builds. Verify
+   both normal-browser and Telegram modes for shared UI changes.
+8. Update `docs/WEB_PWA_SPEC.md` and `docs/ARCHITECTURE.md` whenever a change alters product
+   behavior, identity rules, trust boundaries or deployment architecture.
 
 ## Governance
-Amendments, versioning, and compliance rules:
 
-- Amendment procedure: Proposals to change the constitution MUST be opened as a PR that
-	explains the rationale, migration plan, and tests for compliance. Amendments require
-	approval by at least one maintainer and one reviewer (or a quorum defined in project
-	governance documents). Non-technical wording edits that don't change obligations qualify as
-	PATCH-level (see versioning) but still require review.
-- Versioning policy: The constitution follows semantic versioning:
-	- MAJOR: Backward-incompatible governance or principle removals/major redefinitions.
-	- MINOR: Addition of new principle(s) or material expansion of guidance.
-	- PATCH: Clarifications, wording fixes, or non-semantic refinements.
-	The current ratified version of this document is 1.0.0.
-- Compliance reviews: Every feature PR MUST include a short compliance checklist referencing
-	the core principles. Non-compliant changes require an explicit waiver PR that documents
-	technical constraints, alternatives considered, and an expiration date for the waiver.
+This constitution is the controlling rule set for feature specifications, plans and tasks.
+Amendments require a documented rationale, migration impact and review. Versioning follows
+semantic versioning: MAJOR for incompatible governance changes, MINOR for new or materially
+expanded principles, and PATCH for clarifications that do not change obligations.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): confirm original adoption date | **Last Amended**: 2025-11-12
+**Version**: 2.0.0 | **Ratified**: 2025-11-12 | **Last Amended**: 2026-08-16

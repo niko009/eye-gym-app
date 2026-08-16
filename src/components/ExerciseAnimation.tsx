@@ -87,12 +87,14 @@ export default function ExerciseAnimation({ type }: Props) {
           transition: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         };
       case 'circle':
+      case 'malyshev-circle':
         return {
           pupilX: [-rangeX, 0, rangeX, 0, -rangeX],
           pupilY: [0, -rangeY, 0, rangeY, 0],
           transition: { duration: 4, repeat: Infinity, ease: "linear" }
         };
       case 'blink':
+      case 'butterfly':
         return {
           blinkHeight: ["0%", "50%", "0%", "50%", "0%", "50%", "0%"],
           transition: { duration: 3, repeat: Infinity, times: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 1] }
@@ -115,6 +117,18 @@ export default function ExerciseAnimation({ type }: Props) {
           pupilY: [0, -rangeY, rangeY, -rangeY, 0, rangeY, -rangeY, rangeY, 0],
           transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
         };
+      case 'infinity':
+        return {
+          pupilX: [-rangeX, 0, rangeX, 0, -rangeX, 0, rangeX, 0, -rangeX],
+          pupilY: [0, -rangeY, 0, rangeY, 0, rangeY, 0, -rangeY, 0],
+          transition: { duration: 6, repeat: Infinity, ease: "linear" }
+        };
+      case 'nose-writing':
+        return {
+          pupilX: [-rangeX, -8, 12, rangeX, 5, -rangeX],
+          pupilY: [rangeY, -rangeY, 8, -8, rangeY, rangeY],
+          transition: { duration: 7, repeat: Infinity, ease: "easeInOut" }
+        };
       case 'palming':
         return {
           opacity: [1, 0, 1],
@@ -127,12 +141,19 @@ export default function ExerciseAnimation({ type }: Props) {
           transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
         };
       case 'cross':
+      case 'malyshev-convergence':
         return {
           pupilX: {
             left: [0, rangeX * 0.8, 0],
             right: [0, -rangeX * 0.8, 0]
           },
           transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        };
+      case 'malyshev-switches':
+        return {
+          pupilX: [-rangeX, rangeX, -rangeX, 0, 0, 0],
+          pupilY: [0, 0, 0, -rangeY, rangeY, -rangeY],
+          transition: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         };
       case 'blink-squeeze':
         return {
@@ -157,7 +178,7 @@ export default function ExerciseAnimation({ type }: Props) {
       >
         {/* Left Eye */}
         <Eye 
-          pupilX={type === 'cross' ? anim.pupilX?.left : anim.pupilX}
+          pupilX={type === 'cross' || type === 'malyshev-convergence' ? anim.pupilX?.left : anim.pupilX}
           pupilY={anim.pupilY}
           scale={anim.scale}
           irisScale={anim.irisScale}
@@ -168,7 +189,7 @@ export default function ExerciseAnimation({ type }: Props) {
         
         {/* Right Eye */}
         <Eye 
-          pupilX={type === 'cross' ? anim.pupilX?.right : anim.pupilX}
+          pupilX={type === 'cross' || type === 'malyshev-convergence' ? anim.pupilX?.right : anim.pupilX}
           pupilY={anim.pupilY}
           scale={anim.scale}
           irisScale={anim.irisScale}

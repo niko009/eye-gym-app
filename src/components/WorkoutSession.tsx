@@ -1,273 +1,187 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Play, Pause, SkipForward, X, CheckCircle2 } from 'lucide-react';
-import { Complex, Exercise } from '../types';
-import { EXERCISES } from '../data';
-import { speak, getSettings, saveStats, getStats, updateStreak } from '../utils';
+import {useEffect, useRef, useState} from 'react';
+import {AnimatePresence, motion} from 'motion/react';
+import {CheckCircle2, ChevronLeft, Pause, Play, RotateCcw, SkipForward, Volume2, VolumeX, X} from 'lucide-react';
+import {pauseVoice, speakCue, speakExercise, stopVoice} from '../audio/voice';
+import {EXERCISE_BY_ID, localize} from '../data';
+import {completeWorkout, REST_SECONDS} from '../domain/workouts';
+import {getMessages} from '../i18n';
+import {useTelegram} from '../hooks/useTelegram';
+import type {Complex, UserSettings, WorkoutPlan, WorkoutRecord} from '../types';
 import ExerciseAnimation from './ExerciseAnimation';
-import { useTelegram } from '../hooks/useTelegram';
 
 interface Props {
+  plan: WorkoutPlan;
   complex: Complex;
-  onClose: (completed: boolean) => void;
+  settings: UserSettings;
+  onComplete: (record: WorkoutRecord) => void;
+  onExit: () => void;
 }
 
-const translations = {
-  ru: {
-    finishTitle: 'Отлично!',
-    finishDesc: (name: string) => `Вы закончили тренировку «${name}».`,
-    toMain: 'Вернуться на главную',
-    exerciseOf: (current: number, total: number) => `Упражнение ${current} из ${total}`,
-    rest: 'Перерыв',
-    secShort: 'секунд',
-    prepare: 'Приготовьтесь к следующему...',
-    pause: 'ПАУЗА',
-    continue: 'ПРОДОЛЖИТЬ',
-    skip: 'ПРОПУСТИТЬ',
-    start: 'НАЧАТЬ',
-    voiceOn: 'Голос ВКЛ',
-    voiceOff: 'Без звука',
-    finishVoice: 'Тренировка завершена. Отличная работа!',
-    restVoice: 'Перерыв десять секунд.',
-  },
-  ro: {
-    finishTitle: 'Excelent!',
-    finishDesc: (name: string) => `Ați terminat antrenamentul „${name}”.`,
-    toMain: 'Înapoi la meniu',
-    exerciseOf: (current: number, total: number) => `Exercițiul ${current} din ${total}`,
-    rest: 'Pauză',
-    secShort: 'secunde',
-    prepare: 'Pregătiți-vă pentru următorul...',
-    pause: 'PAUZĂ',
-    continue: 'CONTINUĂ',
-    skip: 'SARE',
-    start: 'START',
-    voiceOn: 'Voce PORNITĂ',
-    voiceOff: 'Fără sunet',
-    finishVoice: 'Antrenament finalizat. Excelentă treabă!',
-    restVoice: 'Pauză zece secunde.',
-  }
-};
+type Phase = 'exercise' | 'rest' | 'finished';
+interface WorkoutState {index: number; phase: Phase; remainingMs: number; paused: boolean}
 
-export default function WorkoutSession({ complex, onClose }: Props) {
-  const { hapticFeedback, tg } = useTelegram();
-  const settings = getSettings();
-  const t = translations[settings.language || 'ru'] || translations.ru;
-  
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isResting, setIsResting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
-  
-  useEffect(() => {
-    if (tg?.BackButton) {
-      tg.BackButton.show();
-      const handleBack = () => onClose(false);
-      tg.BackButton.onClick(handleBack);
-      return () => {
-        tg.BackButton.hide();
-        tg.BackButton.offClick(handleBack);
-      };
+export default function WorkoutSession({plan, complex, settings, onComplete, onExit}: Props) {
+  const t = getMessages(settings.language);
+  const {webApp, hapticFeedback} = useTelegram();
+  const initialExercise = EXERCISE_BY_ID.get(plan.exerciseIds[0])!;
+  const [state, setState] = useState<WorkoutState>({index: 0, phase: 'exercise', remainingMs: initialExercise.durationSeconds * 1000, paused: false});
+  const [showExit, setShowExit] = useState(false);
+  const endsAt = useRef(0);
+  const currentExercise = EXERCISE_BY_ID.get(plan.exerciseIds[state.index])!;
+
+  const advance = (current: WorkoutState): WorkoutState => {
+    if (current.phase === 'exercise') {
+      if (current.index === plan.exerciseIds.length - 1) return {...current, phase: 'finished', remainingMs: 0, paused: false};
+      return {...current, phase: 'rest', remainingMs: REST_SECONDS * 1000, paused: false};
     }
-  }, [tg, onClose]);
-
-  const currentExerciseId = complex.exercises[currentIndex];
-  const currentExercise = EXERCISES.find(e => e.id === currentExerciseId)!;
-
-  const nextStep = useCallback(() => {
-    if (isResting) {
-      // Finished rest, go to next exercise
-      if (currentIndex < complex.exercises.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-        setIsResting(false);
-        setTimeLeft(30);
-      } else {
-        setIsFinished(true);
-      }
-    } else {
-      // Finished exercise, go to rest (unless it was the last one)
-      if (currentIndex < complex.exercises.length - 1) {
-        setIsResting(true);
-        setTimeLeft(10);
-      } else {
-        setIsFinished(true);
-      }
+    if (current.phase === 'rest') {
+      const nextIndex = current.index + 1;
+      return {index: nextIndex, phase: 'exercise', remainingMs: EXERCISE_BY_ID.get(plan.exerciseIds[nextIndex])!.durationSeconds * 1000, paused: false};
     }
-  }, [currentIndex, isResting, complex.exercises.length]);
-
-  useEffect(() => {
-    if (isPaused || isFinished) return;
-
-    if (timeLeft <= 0) {
-      nextStep();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft, isPaused, isFinished, nextStep]);
-
-  // Voice handle
-  useEffect(() => {
-    if (isFinished) {
-      if (settings.voiceEnabled) speak(t.finishVoice, settings.language);
-      return;
-    }
-
-    if (isResting) {
-      if (settings.voiceEnabled) speak(t.restVoice, settings.language);
-    } else {
-      if (settings.voiceEnabled) {
-        const name = settings.language === 'ro' ? currentExercise.nameRo : currentExercise.name;
-        const msg = settings.language === 'ro' ? currentExercise.instructionRo : currentExercise.instruction;
-        speak(`${name}. ${msg}`, settings.language);
-      }
-    }
-  }, [currentIndex, isResting, isFinished, settings.voiceEnabled, settings.language, currentExercise, t]);
-
-  const handleFinish = () => {
-    // Update stats
-    const stats = getStats();
-    stats.completedWorkouts += 1;
-    stats.totalTimeMinutes += complex.durationTotal;
-    stats.complexCounts[complex.id] = (stats.complexCounts[complex.id] || 0) + 1;
-    
-    // Most popular complex
-    let maxCount = 0;
-    let popularId = stats.popularComplexId;
-    for (const id in stats.complexCounts) {
-      if (stats.complexCounts[id] > maxCount) {
-        maxCount = stats.complexCounts[id];
-        popularId = id;
-      }
-    }
-    stats.popularComplexId = popularId;
-
-    const updatedStats = updateStreak(stats);
-    saveStats(updatedStats);
-    
-    onClose(true);
+    return current;
   };
 
-  if (isFinished) {
+  useEffect(() => {
+    if (state.phase === 'finished' || state.paused) return;
+    endsAt.current = Date.now() + state.remainingMs;
+    const tick = () => {
+      const remainingMs = Math.max(0, endsAt.current - Date.now());
+      if (remainingMs === 0) setState((current) => advance({...current, remainingMs: 0}));
+      else setState((current) => ({...current, remainingMs}));
+    };
+    const timer = window.setInterval(tick, 250);
+    return () => window.clearInterval(timer);
+  }, [state.index, state.phase, state.paused]);
+
+  useEffect(() => {
+    if (!settings.voiceEnabled) return;
+    if (state.phase === 'exercise') speakExercise(currentExercise.id, `${localize(currentExercise.name, settings.language)}. ${localize(currentExercise.instruction, settings.language)}`, settings.language);
+    if (state.phase === 'rest') speakCue('rest', t.prepare, settings.language);
+    if (state.phase === 'finished') speakCue('finished', t.finished, settings.language);
+    return stopVoice;
+  }, [currentExercise, settings.language, settings.voiceEnabled, state.index, state.phase, t.finished, t.prepare]);
+
+  useEffect(() => {
+    if (!webApp?.BackButton) return;
+    const back = () => setShowExit(true);
+    webApp.BackButton.show();
+    webApp.BackButton.onClick(back);
+    return () => {
+      webApp.BackButton?.offClick(back);
+      webApp.BackButton?.hide();
+    };
+  }, [webApp]);
+
+  useEffect(() => stopVoice, []);
+
+  const togglePause = () => {
+    hapticFeedback();
+    pauseVoice(!state.paused);
+    setState((current) => {
+      const remainingMs = current.paused ? current.remainingMs : Math.max(0, endsAt.current - Date.now());
+      return {...current, remainingMs, paused: !current.paused};
+    });
+  };
+
+  const previous = () => {
+    hapticFeedback();
+    setState((current) => {
+      const index = current.phase === 'rest' ? current.index : Math.max(0, current.index - 1);
+      return {index, phase: 'exercise', remainingMs: EXERCISE_BY_ID.get(plan.exerciseIds[index])!.durationSeconds * 1000, paused: false};
+    });
+  };
+
+  const skip = () => {
+    hapticFeedback();
+    setState((current) => advance(current));
+  };
+
+  const phaseCount = plan.exerciseIds.length * 2 - 1;
+  const completedPhases = state.index * 2 + (state.phase === 'rest' ? 1 : state.phase === 'finished' ? phaseCount : 0);
+  const progress = Math.min(100, (completedPhases / phaseCount) * 100);
+  const seconds = Math.ceil(state.remainingMs / 1000);
+
+  if (state.phase === 'finished') {
     return (
-      <div className="fixed inset-0 bg-tg-bg z-50 flex flex-col items-center justify-center p-6 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="bg-emerald-500/10 p-6 rounded-full text-emerald-500 mb-6"
-        >
-          <CheckCircle2 size={80} />
-        </motion.div>
-        <h2 className="text-3xl font-bold mb-2 text-tg-text">{t.finishTitle}</h2>
-        <p className="text-tg-hint mb-8">{t.finishDesc(settings.language === 'ro' ? complex.nameRo : complex.name)}</p>
-        <button
-          onClick={handleFinish}
-          className="w-full max-w-xs py-4 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-colors"
-        >
-          {t.toMain}
-        </button>
-      </div>
+      <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-tg-bg p-6 pt-safe">
+        <div className="w-full max-w-md text-center">
+          <motion.div initial={{scale: 0.5, rotate: -12}} animate={{scale: 1, rotate: 0}} transition={{type: 'spring'}} className="mx-auto mb-7 grid size-28 place-items-center rounded-[2.5rem] bg-emerald-500/12 text-emerald-600 shadow-inner">
+            <CheckCircle2 size={58} strokeWidth={1.7} />
+          </motion.div>
+          <p className="eyebrow">{localize(complex.name, settings.language)}</p>
+          <h2 className="mt-2 text-4xl font-black tracking-tight">{t.finished}</h2>
+          <p className="mx-auto mt-4 max-w-sm leading-7 text-tg-hint">{t.finishedDescription(localize(complex.name, settings.language))}</p>
+          <button type="button" onClick={() => onComplete(completeWorkout(plan))} className="primary-button mt-9 w-full">{t.backHome}</button>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-tg-bg z-50 flex flex-col items-center justify-between p-6 overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full -mr-32 -mt-32 blur-3xl opacity-50" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full -ml-32 -mb-32 blur-3xl opacity-50" />
+    <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="fixed inset-0 z-50 flex min-h-[var(--tg-viewport-stable-height,100dvh)] flex-col overflow-hidden bg-tg-bg px-5 pb-safe pt-safe">
+      <div aria-hidden="true" className="pointer-events-none absolute -right-28 -top-28 size-80 rounded-full bg-emerald-500/10 blur-3xl" />
+      <header className="relative mx-auto flex w-full max-w-3xl items-center justify-between gap-3 py-3">
+        <button type="button" aria-label={t.exit} onClick={() => setShowExit(true)} className="interactive-icon"><X size={21} /></button>
+        <div className="min-w-0 text-center">
+          <p className="eyebrow">{t.workoutOf(state.index + 1, plan.exerciseIds.length)}</p>
+          <h1 className="truncate text-lg font-black">{state.phase === 'rest' ? t.rest : localize(currentExercise.name, settings.language)}</h1>
+        </div>
+        <div className="grid size-11 place-items-center rounded-2xl border border-[var(--line)] bg-tg-secondary-bg text-emerald-600" title={settings.voiceEnabled ? t.voiceOn : t.voiceOff}>
+          {settings.voiceEnabled ? <Volume2 size={19} /> : <VolumeX size={19} />}
+        </div>
+      </header>
 
-      {/* Header */}
-      <div className="w-full flex items-center justify-between mb-2 z-10">
-        <button onClick={() => onClose(false)} className="p-3 bg-tg-secondary-bg text-tg-hint rounded-2xl hover:text-tg-text transition-colors border border-emerald-500/10">
-          <X size={24} />
-        </button>
-        <div className="flex flex-col items-center">
-          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] leading-none mb-1">
-            {t.exerciseOf(currentIndex + 1, complex.exercises.length)}
-          </span>
-          <h1 className="text-xl font-black text-tg-text leading-tight">
-            {isResting ? t.rest : (settings.language === 'ro' ? currentExercise.nameRo : currentExercise.name)}
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/10">
-           <div className={`w-2 h-2 rounded-full ${settings.voiceEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-tg-hint'}`} />
-           <span className="text-[10px] font-bold text-tg-text uppercase tracking-wider">
-             {settings.voiceEnabled ? t.voiceOn : t.voiceOff}
-           </span>
-        </div>
+      <div className="relative mx-auto mt-2 h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-slate-500/10">
+        <motion.div className="h-full rounded-full bg-emerald-500" animate={{width: `${progress}%`}} />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full z-10">
+      <main className="relative mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center py-4">
         <AnimatePresence mode="wait">
-          {isResting ? (
-            <motion.div
-              key="rest"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center"
-            >
-              <div className="w-56 h-56 bg-tg-secondary-bg rounded-[60px] flex items-center justify-center border-4 border-emerald-500/10 shadow-inner">
-                <span className="text-8xl font-black text-emerald-500 tabular-nums tracking-tighter">{timeLeft}</span>
+          {state.phase === 'rest' ? (
+            <motion.div key="rest" initial={{opacity: 0, scale: 0.94}} animate={{opacity: 1, scale: 1}} exit={{opacity: 0, scale: 1.04}} className="text-center">
+              <div className="mx-auto grid size-56 place-items-center rounded-[4rem] border border-emerald-500/15 bg-tg-secondary-bg shadow-[inset_0_0_55px_rgba(16,185,129,.08)]">
+                <span className="text-8xl font-black tabular-nums text-emerald-600">{seconds}</span>
               </div>
-              <p className="mt-8 text-tg-hint font-bold uppercase tracking-widest text-xs">{t.prepare}</p>
+              <p className="mt-7 text-sm font-bold text-tg-hint">{t.prepare}</p>
             </motion.div>
           ) : (
-            <motion.div
-              key={currentExercise.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="flex flex-col items-center w-full"
-            >
-              <div className="p-4 bg-tg-secondary-bg rounded-[60px] border-4 border-emerald-500/10 shadow-sm">
+            <motion.div key={`${state.index}-${currentExercise.id}`} initial={{opacity: 0, y: 18}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -18}} className="w-full text-center">
+              <div className="mx-auto max-w-xl rounded-[3rem] border border-[var(--line)] bg-tg-secondary-bg p-2 shadow-[0_28px_80px_-55px_rgba(7,77,67,.75)]">
                 <ExerciseAnimation type={currentExercise.animationType} />
               </div>
-              
-              <div className="mt-10 text-center px-4">
-                <div className="text-8xl font-black text-tg-text mb-2 font-sans tracking-tighter tabular-nums leading-none">
-                  00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
-                </div>
-                <p className="text-tg-hint font-medium leading-relaxed max-w-xs mx-auto">
-                  {settings.language === 'ro' ? currentExercise.instructionRo : currentExercise.instruction}
-                </p>
-              </div>
+              <div className="mt-5 text-6xl font-black tabular-nums tracking-tighter sm:text-7xl">{formatTimer(seconds)}</div>
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-tg-hint sm:text-base">{localize(currentExercise.instruction, settings.language)}</p>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
 
-      {/* Progress Bar (Overall Session) */}
-      <div className="w-full bg-tg-secondary-bg h-2 rounded-full overflow-hidden mb-8 max-w-xs border border-emerald-500/10">
-        <motion.div 
-           className="bg-emerald-500 h-full"
-           initial={{ width: 0 }}
-           animate={{ width: `${((currentIndex) / complex.exercises.length) * 100}%` }}
-        />
-      </div>
+      <footer className="relative mx-auto grid w-full max-w-3xl grid-cols-[auto_1fr_1fr] gap-3 py-4">
+        <button type="button" aria-label={t.workoutOf(Math.max(1, state.index), plan.exerciseIds.length)} onClick={previous} disabled={state.index === 0 && state.phase === 'exercise'} className="interactive-icon disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft size={22} /></button>
+        <button type="button" onClick={togglePause} className="secondary-button inline-flex items-center justify-center gap-2">{state.paused ? <Play size={18} /> : <Pause size={18} />}{state.paused ? t.resume : t.pause}</button>
+        <button type="button" onClick={skip} className="primary-button inline-flex items-center justify-center gap-2">{state.phase === 'rest' ? <RotateCcw size={18} /> : <SkipForward size={18} />}{state.phase === 'rest' ? t.next : t.skip}</button>
+      </footer>
 
-      {/* Controls */}
-      <div className="w-full flex items-center justify-center gap-4 mt-4 pb-8 z-10">
-        <button
-          onClick={() => { hapticFeedback(); setIsPaused(!isPaused); }}
-          className="flex-1 py-4 bg-tg-secondary-bg rounded-2xl text-tg-text font-black tracking-widest hover:bg-emerald-500/10 transition-all uppercase text-sm border border-emerald-500/10"
-        >
-          {isPaused ? t.continue : t.pause}
-        </button>
-        
-        <button
-          onClick={() => { hapticFeedback(); nextStep(); }}
-          className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black tracking-widest shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-100 transition-all uppercase text-sm"
-        >
-          {isResting ? t.start : t.skip}
-        </button>
-      </div>
-    </div>
+      <AnimatePresence>
+        {showExit && (
+          <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="absolute inset-0 z-20 grid place-items-end bg-slate-950/45 p-4 backdrop-blur-sm sm:place-items-center" onClick={() => setShowExit(false)}>
+            <motion.div initial={{y: 40, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 40, opacity: 0}} onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="exit-title" className="w-full max-w-sm rounded-[2rem] border border-[var(--line)] bg-tg-secondary-bg p-6 shadow-2xl">
+              <h2 id="exit-title" className="text-2xl font-black">{t.exitWorkoutTitle}</h2>
+              <p className="mt-3 leading-6 text-tg-hint">{t.exitWorkoutBody}</p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => setShowExit(false)} className="secondary-button">{t.cancel}</button>
+                <button type="button" onClick={onExit} className="rounded-2xl bg-red-600 px-4 py-3.5 font-black text-white">{t.exit}</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
+}
+
+function formatTimer(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
