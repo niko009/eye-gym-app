@@ -162,10 +162,10 @@ export default function WorkoutSession({plan, complex, settings, onComplete, onE
         </AnimatePresence>
       </main>
 
-      <footer className="relative mx-auto grid w-full max-w-3xl grid-cols-[auto_1fr_1fr] gap-3 py-4">
+      <footer className="relative mx-auto grid w-full max-w-3xl grid-cols-[2.75rem_minmax(0,1fr)_minmax(0,1fr)] gap-2 py-4 sm:gap-3">
         <button type="button" aria-label={t.workoutOf(Math.max(1, state.index), plan.exerciseIds.length)} onClick={previous} disabled={state.index === 0 && state.phase === 'exercise'} className="interactive-icon disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft size={22} /></button>
-        <button type="button" onClick={togglePause} className="secondary-button inline-flex items-center justify-center gap-2">{state.paused ? <Play size={18} /> : <Pause size={18} />}{state.paused ? t.resume : t.pause}</button>
-        <button type="button" onClick={skip} className="primary-button inline-flex items-center justify-center gap-2">{state.phase === 'rest' ? <RotateCcw size={18} /> : <SkipForward size={18} />}{state.phase === 'rest' ? t.next : t.skip}</button>
+        <button type="button" aria-label={state.paused ? t.resume : t.pause} onClick={togglePause} className="secondary-button inline-flex min-w-0 items-center justify-center gap-2">{state.paused ? <Play size={18} /> : <Pause size={18} />}<span className="hidden min-[360px]:inline">{state.paused ? t.resume : t.pause}</span></button>
+        <button type="button" aria-label={state.phase === 'rest' ? t.next : t.skip} onClick={skip} className="primary-button inline-flex min-w-0 items-center justify-center gap-2">{state.phase === 'rest' ? <RotateCcw size={18} /> : <SkipForward size={18} />}<span className="hidden min-[360px]:inline">{state.phase === 'rest' ? t.next : t.skip}</span></button>
       </footer>
 
       <AnimatePresence>

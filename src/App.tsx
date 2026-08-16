@@ -3,6 +3,7 @@ import {AnimatePresence, MotionConfig, motion} from 'motion/react';
 import Dashboard from './components/Dashboard';
 import ConsentBanner from './components/ConsentBanner';
 import InstallPrompt from './components/InstallPrompt';
+import MedicalNotice from './components/MedicalNotice';
 import PwaUpdatePrompt from './components/PwaUpdatePrompt';
 import SettingsView from './components/SettingsView';
 import StatsView from './components/StatsView';
@@ -29,7 +30,8 @@ export default function App() {
   const [records, setRecords] = useState<WorkoutRecord[]>([]);
   const [historyStatus, setHistoryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null);
-  const [session, setSession] = useState<SessionState>({status: 'loading', user: null});
+  const [pendingComplex, setPendingComplex] = useState<Complex | null>(null);
+  const [session, setSession] = useState<SessionState>({status: 'guest', user: null});
   const [publicConfig, setPublicConfig] = useState<PublicConfig>({googleAuthEnabled: false, telegramAuthEnabled: false, pushEnabled: false, vapidPublicKey: null});
   const [syncing, setSyncing] = useState(false);
   const [reminderStatus, setReminderStatus] = useState<'idle' | 'saving' | 'enabled' | 'disabled' | 'unsupported' | 'denied' | 'error'>('idle');
@@ -162,9 +164,25 @@ export default function App() {
     }
   };
 
-  const startWorkout = (complex: Complex) => {
+  const beginWorkout = (complex: Complex) => {
     setActivePlan(createWorkoutPlan(complex, settings.language));
     track('workout_started', {complex_id: complex.id, channel: getTelegramWebApp() ? 'telegram' : 'web'});
+  };
+
+  const requestWorkout = (complex: Complex) => {
+    if (settings.medicalNoticeAccepted) {
+      beginWorkout(complex);
+      return;
+    }
+    setPendingComplex(complex);
+  };
+
+  const acceptMedicalNotice = () => {
+    if (!pendingComplex) return;
+    const next = {...settings, medicalNoticeAccepted: true};
+    updateSettings(next);
+    beginWorkout(pendingComplex);
+    setPendingComplex(null);
   };
 
   const finishWorkout = async (record: WorkoutRecord) => {
@@ -220,7 +238,7 @@ export default function App() {
               stats={stats}
               settings={settings}
               onRetryHistory={() => void loadHistory()}
-              onSelectComplex={startWorkout}
+              onSelectComplex={requestWorkout}
               onOpenStats={() => setView('stats')}
               onOpenSettings={() => setView('settings')}
             />
@@ -239,6 +257,9 @@ export default function App() {
       </AnimatePresence>
 
       <AnimatePresence>
+        {pendingComplex && !activePlan && (
+          <MedicalNotice language={settings.language} onAccept={acceptMedicalNotice} onCancel={() => setPendingComplex(null)} />
+        )}
         {activePlan && activeComplex && (
           <WorkoutSession
             plan={activePlan}

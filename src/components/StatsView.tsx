@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
-import {ArrowLeft, CalendarDays, Clock3, Flame, History, Star, Trophy} from 'lucide-react';
+import {ArrowLeft, CalendarDays, Check, Clock3, Flame, History, Lock, Medal, Share2, Star, Trophy} from 'lucide-react';
 import {COMPLEX_BY_ID, localize} from '../data';
 import {getMessages} from '../i18n';
 import type {UserSettings, UserStats, WorkoutRecord} from '../types';
@@ -11,9 +11,28 @@ type Period = 'days' | 'weeks' | 'months';
 export default function StatsView({records, stats, settings, onClose}: Props) {
   const t = getMessages(settings.language);
   const [period, setPeriod] = useState<Period>('days');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
   const favorite = stats.favoriteComplexId ? COMPLEX_BY_ID.get(stats.favoriteComplexId) : null;
   const chart = buildChart(records, period, settings.language);
   const maximum = Math.max(1, ...chart.map((point) => point.value));
+  const achievements = [
+    {name: t.firstSession, unlocked: stats.completedWorkouts >= 1},
+    {name: t.threeDayStreak, unlocked: stats.bestStreak >= 3},
+    {name: t.halfHour, unlocked: stats.totalTimeSeconds >= 30 * 60},
+    {name: t.explorer, unlocked: Object.keys(stats.complexCounts).length >= 3},
+    {name: t.tenSessions, unlocked: stats.completedWorkouts >= 10},
+  ];
+
+  const shareProgress = async () => {
+    const text = t.shareText(stats.completedWorkouts, Math.round(stats.totalTimeSeconds / 60), stats.currentStreak);
+    if (navigator.share) {
+      await navigator.share({title: 'Eye Gym', text, url: 'https://eye-gym.bacus.dev/'}).catch(() => undefined);
+      return;
+    }
+    await navigator.clipboard.writeText(`${text} https://eye-gym.bacus.dev/`).catch(() => undefined);
+    setShareStatus('copied');
+    window.setTimeout(() => setShareStatus('idle'), 2_000);
+  };
 
   return (
     <div className="min-h-[var(--tg-viewport-stable-height,100dvh)] px-5 pb-14 pt-safe sm:px-8">
@@ -52,6 +71,21 @@ export default function StatsView({records, stats, settings, onClose}: Props) {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="surface-card p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><p className="eyebrow"><Medal className="mr-1 inline" size={14} />{t.achievements}</p><h2 className="mt-1 text-xl font-black">{achievements.filter((item) => item.unlocked).length} / {achievements.length}</h2></div>
+            <button type="button" onClick={() => void shareProgress()} className="secondary-button inline-flex items-center justify-center gap-2 text-sm"><Share2 size={17} />{shareStatus === 'copied' ? t.shared : t.shareProgress}</button>
+          </div>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {achievements.map((item) => (
+              <li key={item.name} className={`rounded-2xl border p-4 ${item.unlocked ? 'border-emerald-500/25 bg-emerald-500/8' : 'border-[var(--line)] bg-slate-500/5 opacity-70'}`}>
+                <div className={`mb-3 grid size-9 place-items-center rounded-xl ${item.unlocked ? 'bg-emerald-600 text-white' : 'bg-slate-500/10 text-tg-hint'}`}>{item.unlocked ? <Check size={17} /> : <Lock size={16} />}</div>
+                <p className="text-sm font-black leading-5">{item.name}</p><p className="mt-1 text-[10px] font-black uppercase tracking-wider text-tg-hint">{item.unlocked ? t.unlocked : t.locked}</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">

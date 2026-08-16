@@ -8,6 +8,9 @@ from typing import Any
 
 HEADER_ROUTE_ID = "eye-gym-security-headers"
 API_ROUTE_ID = "eye-gym-api-route"
+REDIRECT_ROUTE_ID = "eye-gym-https-redirect"
+IMMUTABLE_CACHE_ROUTE_ID = "eye-gym-immutable-cache"
+FRESH_CACHE_ROUTE_ID = "eye-gym-fresh-cache"
 
 
 def configure(config: dict[str, Any], domain: str, upstream: str) -> dict[str, Any]:
@@ -35,6 +38,43 @@ def configure(config: dict[str, Any], domain: str, upstream: str) -> dict[str, A
             }
         ],
     }
+    redirect_route = {
+        "@id": REDIRECT_ROUTE_ID,
+        "match": [{"host": [domain], "protocol": "http"}],
+        "handle": [
+            {
+                "handler": "static_response",
+                "headers": {"Location": ["https://{http.request.host}{http.request.uri}"]},
+                "status_code": 308,
+            }
+        ],
+        "terminal": True,
+    }
+    immutable_cache_route = {
+        "@id": IMMUTABLE_CACHE_ROUTE_ID,
+        "match": [{"host": [domain], "path": ["/assets/*", "/audio/v1/*"]}],
+        "handle": [
+            {
+                "handler": "headers",
+                "response": {"set": {"Cache-Control": ["public, max-age=31536000, immutable"]}},
+            }
+        ],
+    }
+    fresh_cache_route = {
+        "@id": FRESH_CACHE_ROUTE_ID,
+        "match": [
+            {
+                "host": [domain],
+                "path": ["/", "/index.html", "/*.html", "/sw.js", "/workbox-*", "/manifest.webmanifest"],
+            }
+        ],
+        "handle": [
+            {
+                "handler": "headers",
+                "response": {"set": {"Cache-Control": ["no-cache"]}},
+            }
+        ],
+    }
     api_route = {
         "@id": API_ROUTE_ID,
         "match": [{"host": [domain], "path": ["/api/*"]}],
@@ -52,9 +92,16 @@ def configure(config: dict[str, Any], domain: str, upstream: str) -> dict[str, A
         routes[:] = [
             route
             for route in routes
-            if route.get("@id") not in {HEADER_ROUTE_ID, API_ROUTE_ID}
+            if route.get("@id")
+            not in {
+                HEADER_ROUTE_ID,
+                API_ROUTE_ID,
+                REDIRECT_ROUTE_ID,
+                IMMUTABLE_CACHE_ROUTE_ID,
+                FRESH_CACHE_ROUTE_ID,
+            }
         ]
-        routes[0:0] = [header_route, api_route]
+        routes[0:0] = [redirect_route, header_route, immutable_cache_route, fresh_cache_route, api_route]
     return config
 
 

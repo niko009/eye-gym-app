@@ -5,10 +5,14 @@ import App from './App.tsx';
 import {initializeTelegram} from './platform/telegram.ts';
 import './index.css';
 
-initializeTelegram();
+async function bootstrap() {
+  await window.__telegramSdkReady;
+  initializeTelegram();
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+void bootstrap();

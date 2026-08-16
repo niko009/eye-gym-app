@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://eye-gym.bacus.dev/sitemap.xml

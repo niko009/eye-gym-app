@@ -5,11 +5,21 @@ from pathlib import Path
 
 
 MARKER = "# BEGIN EYE GYM MANAGED ROUTES"
+END_MARKER = "# END EYE GYM MANAGED ROUTES"
 BLOCK = """
   # BEGIN EYE GYM MANAGED ROUTES
+  @eyeGymHttp protocol http
+  redir @eyeGymHttp https://{host}{uri} permanent
+
   handle /api/* {
     reverse_proxy {upstream}
   }
+
+  @eyeGymImmutable path /assets/* /audio/v1/*
+  header @eyeGymImmutable Cache-Control "public, max-age=31536000, immutable"
+
+  @eyeGymFresh path / /index.html /*.html /sw.js /workbox-* /manifest.webmanifest
+  header @eyeGymFresh Cache-Control "no-cache"
 
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -41,7 +51,15 @@ def find_site_opening_brace(content: str, domain: str) -> int:
 def configure(path: Path, domain: str, upstream: str) -> bool:
     content = path.read_text(encoding="utf-8")
     if MARKER in content:
-        return False
+        start = content.index(MARKER)
+        line_start = content.rfind("\n", 0, start) + 1
+        end = content.index(END_MARKER, start) + len(END_MARKER)
+        block = BLOCK.replace("{upstream}", upstream).strip("\n")
+        updated = content[:line_start] + block + content[end:]
+        if updated == content:
+            return False
+        path.write_text(updated, encoding="utf-8")
+        return True
 
     brace_index = find_site_opening_brace(content, domain)
     block = BLOCK.replace("{upstream}", upstream)

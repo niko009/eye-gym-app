@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
+      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-eye-gym.jpg', 'legal.css', 'about.html', 'contact.html', 'privacy.html', 'terms.html', 'robots.txt', 'sitemap.xml'],
       manifest: {
         name: 'Eye Gym — упражнения для глаз',
         short_name: 'Eye Gym',

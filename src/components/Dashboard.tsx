@@ -84,6 +84,25 @@ export default function Dashboard({historyStatus, session, publicConfig, syncing
             {t.error}. {t.retry}
           </button>
         )}
+        <section className="relative mb-7 overflow-hidden rounded-[2rem] bg-emerald-700 p-5 text-white shadow-xl shadow-emerald-950/15 sm:p-7">
+          <div aria-hidden="true" className="absolute -right-10 -top-16 size-48 rounded-full border-[28px] border-white/8" />
+          <div className="relative grid items-center gap-5 sm:grid-cols-[1fr_auto]">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[.16em] text-emerald-100">{t.quickStartTitle}</p>
+              <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-emerald-50">{t.quickStartBody}</p>
+            </div>
+            <button type="button" onClick={() => {hapticFeedback(); onSelectComplex(COMPLEXES[0]!);}} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-emerald-800 shadow-lg shadow-emerald-950/15">
+              <Play size={17} fill="currentColor" /> {t.startNow}
+            </button>
+          </div>
+        </section>
+
+        {historyStatus !== 'error' && stats.completedWorkouts === 0 && (
+          <section className="mb-7 rounded-[1.75rem] border border-dashed border-emerald-500/30 bg-emerald-500/5 p-5">
+            <h2 className="font-black">{t.firstProgressTitle}</h2>
+            <p className="mt-1.5 text-sm font-semibold leading-6 text-tg-hint">{t.firstProgressBody}</p>
+          </section>
+        )}
         <div className="mb-5 flex items-end justify-between">
           <div>
             <p className="eyebrow">{t.available(COMPLEXES.length)}</p>
@@ -126,7 +145,15 @@ export default function Dashboard({historyStatus, session, publicConfig, syncing
             );
           })}
         </div>
-        <footer className="mt-10 flex flex-wrap items-center justify-center gap-4 border-t border-[var(--line)] pt-6 text-xs font-bold text-tg-hint"><span>© 2026 Eye Gym</span><a href="/privacy.html" target="_blank" rel="noreferrer" className="text-emerald-700 underline decoration-emerald-500/30 underline-offset-4 dark:text-emerald-300">{t.legal}</a><span>{t.medicalDisclaimer}</span></footer>
+        <footer className="mt-10 border-t border-[var(--line)] pt-6 text-center text-xs font-bold text-tg-hint">
+          <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <a href="/about.html" target="_blank" rel="noreferrer" className="text-emerald-700 underline decoration-emerald-500/30 underline-offset-4 dark:text-emerald-300">{t.about}</a>
+            <a href="/contact.html" target="_blank" rel="noreferrer" className="text-emerald-700 underline decoration-emerald-500/30 underline-offset-4 dark:text-emerald-300">{t.contacts}</a>
+            <a href="/privacy.html" target="_blank" rel="noreferrer" className="text-emerald-700 underline decoration-emerald-500/30 underline-offset-4 dark:text-emerald-300">{t.legal}</a>
+            <a href="/terms.html" target="_blank" rel="noreferrer" className="text-emerald-700 underline decoration-emerald-500/30 underline-offset-4 dark:text-emerald-300">{t.terms}</a>
+          </nav>
+          <p className="mt-3">© 2026 Eye Gym · {t.medicalDisclaimer}</p>
+        </footer>
       </main>
     </div>
   );

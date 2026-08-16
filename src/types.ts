@@ -85,6 +85,7 @@ export interface UserSettings {
   motion: MotionPreference;
   reminders: ReminderTime[];
   analyticsConsent: 'unknown' | 'granted' | 'denied';
+  medicalNoticeAccepted: boolean;
 }
 
 export interface UserProfile {

@@ -10,7 +10,14 @@ describe('accessibility settings', () => {
       highContrast: false,
       motion: 'normal',
       voiceOnly: false,
+      medicalNoticeAccepted: false,
     });
+  });
+
+  it('persists acceptance of the informational notice', () => {
+    saveSettings({...defaultSettings, medicalNoticeAccepted: true});
+
+    expect(getSettings().medicalNoticeAccepted).toBe(true);
   });
 
   it('persists accessibility preferences', () => {

@@ -5,9 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#083f3b" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="description" content="Короткие комплексы упражнений для расслабления глаз." />
+    <meta name="description" content="Eye Gym — бесплатные короткие упражнения и голосовые подсказки для перерывов от экрана и расслабления глаз." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://eye-gym.bacus.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Eye Gym" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:title" content="Eye Gym — гимнастика для глаз и перерывы от экрана" />
+    <meta property="og:description" content="Короткие комплексы с таймером, анимациями и голосовыми подсказками на трех языках." />
+    <meta property="og:url" content="https://eye-gym.bacus.dev/" />
+    <meta property="og:image" content="https://eye-gym.bacus.dev/og-eye-gym.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Абстрактная иллюстрация спокойного движения глаз Eye Gym" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Eye Gym — гимнастика для глаз" />
+    <meta name="twitter:description" content="Короткие упражнения для перерывов от экрана с голосовыми подсказками." />
+    <meta name="twitter:image" content="https://eye-gym.bacus.dev/og-eye-gym.jpg" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <title>Eye Gym — упражнения для глаз</title>
+    <title>Eye Gym — гимнастика для глаз и отдых от экрана</title>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"WebApplication","name":"Eye Gym","url":"https://eye-gym.bacus.dev/","description":"Короткие упражнения и голосовые подсказки для перерывов от экрана и расслабления глаз.","applicationCategory":"HealthApplication","operatingSystem":"Web, Android, iOS","inLanguage":["ru","ro","en"],"isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Mihail Bacus"}}
+    </script>
     <script>
       (() => {
         try {
@@ -27,7 +46,18 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      window.__telegramSdkReady = Promise.resolve();
+      if (/(?:^|[?#&])tgWebApp(?:Data|Version|Platform)=/.test(location.href)) {
+        window.__telegramSdkReady = new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://telegram.org/js/telegram-web-app.js';
+          script.onload = resolve;
+          script.onerror = resolve;
+          document.head.appendChild(script);
+        });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -6,17 +6,30 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    credentials: 'include',
-    ...init,
-    headers: init?.body ? {'content-type': 'application/json', ...init.headers} : init?.headers,
-  });
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({error: 'request_failed'})) as {error?: string};
-    throw new ApiError(response.status, body.error ?? 'request_failed');
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 2_000);
+  const abortFromCaller = () => controller.abort();
+  init?.signal?.addEventListener('abort', abortFromCaller, {once: true});
+  try {
+    const response = await fetch(path, {
+      credentials: 'include',
+      ...init,
+      signal: controller.signal,
+      headers: init?.body ? {'content-type': 'application/json', ...init.headers} : init?.headers,
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({error: 'request_failed'})) as {error?: string};
+      throw new ApiError(response.status, body.error ?? 'request_failed');
+    }
+    if (response.status === 204) return undefined as T;
+    return response.json() as Promise<T>;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(0, controller.signal.aborted ? 'request_timeout' : 'network_error');
+  } finally {
+    window.clearTimeout(timeout);
+    init?.signal?.removeEventListener('abort', abortFromCaller);
   }
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
 }
 
 export const api = {

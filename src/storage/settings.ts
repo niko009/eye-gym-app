@@ -14,6 +14,7 @@ export const defaultSettings: UserSettings = {
   motion: 'normal',
   reminders: [],
   analyticsConsent: 'unknown',
+  medicalNoticeAccepted: false,
 };
 
 function isLanguage(value: unknown): value is Language {
@@ -52,6 +53,7 @@ function normalize(value: unknown): UserSettings {
     analyticsConsent: source.analyticsConsent === 'granted' || source.analyticsConsent === 'denied'
       ? source.analyticsConsent
       : 'unknown',
+    medicalNoticeAccepted: typeof source.medicalNoticeAccepted === 'boolean' ? source.medicalNoticeAccepted : false,
   };
 }
 

@@ -75,6 +75,9 @@ jobs:
           fi
           chmod 600 "$ENV_FILE"
           test -s "$ENV_FILE"
+          node scripts/ensure_vapid_env.mjs "$ENV_FILE"
+          grep -qE '^VAPID_PUBLIC_KEY=.+$' "$ENV_FILE"
+          grep -qE '^VAPID_PRIVATE_KEY=.+$' "$ENV_FILE"
 
       - name: Detect reverse proxy configuration
         id: reverse_proxy
@@ -300,11 +303,13 @@ jobs:
           fi
           rm -f "$BACKUP"
 
-      - name: Verify public API
+      - name: Verify public site and API
         run: |
           set -euo pipefail
           for ATTEMPT in $(seq 1 20); do
-            if curl --fail --silent https://eye-gym.bacus.dev/api/health >/dev/null; then
+            if curl --fail --silent https://eye-gym.bacus.dev/api/health >/dev/null \
+              && curl --fail --silent https://eye-gym.bacus.dev/robots.txt | grep -q 'sitemap.xml' \
+              && curl --fail --silent https://eye-gym.bacus.dev/sitemap.xml | grep -q 'about.html'; then
               exit 0
             fi
             sleep 3
