@@ -2,6 +2,11 @@ node_modules/
 build/
 dist/
 coverage/
+/.playwright-cli/
+/dev-dist/
+/output/
+__pycache__/
+*.pyc
 .DS_Store
 *.log
 .env*

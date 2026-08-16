@@ -34,17 +34,19 @@
 This project follows the Eye Gym constitution. Before Phase 0 research may proceed,
 the following checks MUST be performed and documented in the plan:
 
-- Telegram-Native UX: confirm design relies on Telegram WebApp SDK and no custom chrome.
-- Privacy by Design: confirm no telemetry, analytics, or third-party scripts are required.
-- Multilingual Compliance: confirm support plan for English, Russian, Romanian, and
-  that strings will be externalized.
-- Monetization Boundaries: confirm any premium flow uses external links (`openLink()`)
-  and premium codes are entered by the user.
-- Reliability & Simplicity: confirm intended bundle strategy can meet ≤120 KB gzipped and
-  that no external runtime dependencies are required.
-- User Autonomy: confirm opt-in design for reminders and other opt-in features with
-  clear user-facing explanations.
-- Transparency: confirm a Privacy Policy link will be provided in the Web App footer.
+- Multi-channel product: identify browser/PWA, Telegram or shared scope and confirm shared
+  behavior stays in the common React codebase.
+- Verified separate identities: confirm Google OAuth and Telegram `initData` are validated by
+  the API and that providers remain separate users without automatic matching or merging.
+- Offline and synchronization: confirm completed-event, retry and guest-import behavior is
+  idempotent and channel limitations are explicit.
+- Privacy and consent: confirm secrets remain server-side and analytics, Web Push and bot
+  reminders use the required consent boundaries.
+- Localization, accessibility and safety: confirm RU/RO/EN coverage, WCAG 2.1 AA targets and
+  absence of medical claims.
+- Portable operations: confirm migration, Docker, health-check, backup and rollback impact.
+- Incremental delivery: confirm independently testable user stories and browser/Telegram
+  verification for shared changes.
 
 Document results under "Constitution Check" in the plan with pass/fail and any waivers.
 

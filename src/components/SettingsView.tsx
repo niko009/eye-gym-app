@@ -1,148 +1,82 @@
-import React from 'react';
-import { X, Volume2, Bell, Trash2, Languages } from 'lucide-react';
-import { UserSettings } from '../types';
+import {useState} from 'react';
+import type {ReactNode} from 'react';
+import {AnimatePresence, motion} from 'motion/react';
+import {ArrowLeft, BarChart3, Bell, FileText, Languages, LogIn, LogOut, Moon, Plus, Sun, Trash2, UserRound, Volume2} from 'lucide-react';
+import {api} from '../api/client';
+import type {PublicConfig} from '../api/types';
+import {getMessages} from '../i18n';
+import {getTelegramWebApp} from '../platform/telegram';
+import type {Language, SessionState, ThemePreference, UserSettings} from '../types';
+import AudioPackSettings from './AudioPackSettings';
 
-interface Props {
-  settings: UserSettings;
-  onUpdate: (settings: UserSettings) => void;
-  onClose: () => void;
-  onReset: () => void;
-}
+interface Props {settings: UserSettings; session: SessionState; publicConfig: PublicConfig; reminderStatus: 'idle' | 'saving' | 'enabled' | 'disabled' | 'unsupported' | 'denied' | 'error'; onSessionChange: (session: SessionState) => void; onUpdate: (settings: UserSettings) => void; onClose: () => void; onReset: () => void}
 
-const translations = {
-  ru: {
-    title: 'Настройки',
-    settings: 'Настройки',
-    voice: 'Голосовой коуч',
-    reminders: 'Напоминания',
-    reminderTime: 'Время уведомления',
-    language: 'Язык / Limbă',
-    reset: 'Сбросить весь прогресс',
-    save: 'Сохранить изменения',
-  },
-  ro: {
-    title: 'Setări',
-    settings: 'Setări',
-    voice: 'Antrenor vocal',
-    reminders: 'Mementouri',
-    reminderTime: 'Ora notificării',
-    language: 'Язык / Limbă',
-    reset: 'Resetează tot progresul',
-    save: 'Salvează modificările',
-  }
-};
+export default function SettingsView({settings, session, publicConfig, reminderStatus, onSessionChange, onUpdate, onClose, onReset}: Props) {
+  const t = getMessages(settings.language);
+  const [showReset, setShowReset] = useState(false);
 
-export default function SettingsView({ settings, onUpdate, onClose, onReset }: Props) {
-  const t = translations[settings.language || 'ru'] || translations.ru;
-  
-  const toggleVoice = () => onUpdate({ ...settings, voiceEnabled: !settings.voiceEnabled });
-  const toggleReminders = () => onUpdate({ ...settings, remindersEnabled: !settings.remindersEnabled });
-  const setReminderTime = (e: React.ChangeEvent<HTMLInputElement>) => onUpdate({ ...settings, reminderTime: e.target.value });
-  const setLanguage = (lang: 'ru' | 'ro') => onUpdate({ ...settings, language: lang });
+  const addReminder = () => onUpdate({...settings, reminders: [...settings.reminders, {id: crypto.randomUUID(), localTime: '10:00', enabled: true}]});
+  const updateReminder = (id: string, patch: {localTime?: string; enabled?: boolean}) => onUpdate({...settings, reminders: settings.reminders.map((item) => item.id === id ? {...item, ...patch} : item)});
+  const removeReminder = (id: string) => onUpdate({...settings, reminders: settings.reminders.filter((item) => item.id !== id)});
+  const logout = async () => {
+    await api.logout().catch(() => undefined);
+    onSessionChange({status: 'guest', user: null});
+  };
 
   return (
-    <div className="fixed inset-0 bg-tg-bg z-50 flex flex-col pt-safe px-6">
-      <header className="py-6 flex items-center justify-between border-b border-emerald-500/10">
-        <h1 className="text-2xl font-black text-tg-text tracking-tight">{t.title}</h1>
-        <button onClick={onClose} className="p-3 bg-tg-secondary-bg border border-emerald-500/10 rounded-2xl text-tg-hint hover:text-tg-text transition-colors shadow-sm">
-          <X size={24} />
-        </button>
-      </header>
- 
-      <main className="flex-1 overflow-y-auto py-8">
-        <div className="space-y-8">
-          <section>
-            <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">{t.settings}</h2>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between p-4 bg-tg-secondary-bg border border-emerald-500/10 rounded-3xl shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 border border-emerald-500/10">
-                    <Volume2 size={18} />
-                  </div>
-                  <span className="font-bold text-tg-text">{t.voice}</span>
-                </div>
-                <button
-                   onClick={toggleVoice}
-                   className={`w-12 h-6 rounded-full transition-all relative ${settings.voiceEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${settings.voiceEnabled ? 'right-1' : 'left-1'}`} />
-                </button>
-              </div>
- 
-              <div className="flex items-center justify-between p-4 bg-tg-secondary-bg border border-emerald-500/10 rounded-3xl shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-500/10 rounded-xl text-orange-500 border border-orange-500/10">
-                    <Bell size={18} />
-                  </div>
-                  <span className="font-bold text-tg-text">{t.reminders}</span>
-                </div>
-                <button
-                   onClick={toggleReminders}
-                   className={`w-12 h-6 rounded-full transition-all relative ${settings.remindersEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`}
-                >
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${settings.remindersEnabled ? 'right-1' : 'left-1'}`} />
-                </button>
-              </div>
- 
-              {settings.remindersEnabled && (
-                <div className="flex items-center justify-between p-4 bg-emerald-500/10 rounded-3xl mt-2 animate-in fade-in slide-in-from-top-2">
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">{t.reminderTime}</span>
-                  <input
-                    type="time"
-                    value={settings.reminderTime}
-                    onChange={setReminderTime}
-                    className="bg-tg-secondary-bg border border-emerald-500/10 rounded-xl px-3 py-1 font-bold text-tg-text"
-                  />
-                </div>
-              )}
+    <div className="min-h-[var(--tg-viewport-stable-height,100dvh)] px-5 pb-14 pt-safe sm:px-8">
+      <header className="mx-auto flex max-w-3xl items-center gap-4 py-5"><button type="button" aria-label={t.backHome} onClick={onClose} className="interactive-icon"><ArrowLeft size={21} /></button><div><p className="eyebrow">Eye Gym</p><h1 className="text-2xl font-black">{t.settingsTitle}</h1></div></header>
+      <main className="mx-auto max-w-3xl space-y-7">
+        <SettingsSection title={t.appearance}>
+          <div className="settings-row"><RowLabel icon={<Languages />} text={t.language} /><div className="segmented">{(['ru', 'ro', 'en'] as Language[]).map((language) => <button type="button" key={language} onClick={() => onUpdate({...settings, language})} className={settings.language === language ? 'selected' : ''}>{language.toUpperCase()}</button>)}</div></div>
+          <div className="settings-row items-start"><RowLabel icon={settings.theme === 'dark' ? <Moon /> : <Sun />} text={t.theme} /><div className="segmented flex-wrap justify-end">{(['system', 'light', 'dark'] as ThemePreference[]).map((theme) => <button type="button" key={theme} onClick={() => onUpdate({...settings, theme})} className={settings.theme === theme ? 'selected' : ''}>{theme === 'system' ? t.themeSystem : theme === 'light' ? t.themeLight : t.themeDark}</button>)}</div></div>
+          <div className="settings-row"><RowLabel icon={<Volume2 />} text={t.voice} /><Switch checked={settings.voiceEnabled} label={t.voice} onChange={(voiceEnabled) => onUpdate({...settings, voiceEnabled})} /></div>
+        </SettingsSection>
+
+        <SettingsSection title={t.audioPacks}>
+          <AudioPackSettings language={settings.language} />
+        </SettingsSection>
+
+        <SettingsSection title={t.account}>
+          {session.user ? (
+            <div className="settings-row">
+              <RowLabel icon={<UserRound />} text={session.user.displayName} hint={`${session.user.provider === 'telegram' ? 'Telegram' : 'Google'}${session.user.email ? ` · ${session.user.email}` : ''}`} />
+              <button type="button" onClick={() => void logout()} className="ml-auto inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-black text-red-600 hover:bg-red-500/10"><LogOut size={16} />{t.signOut}</button>
             </div>
-          </section>
- 
-          <section>
-            <h2 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4">{t.language}</h2>
-            <div className="p-4 bg-tg-secondary-bg border border-emerald-500/10 rounded-3xl shadow-sm flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 border border-emerald-500/10">
-                   <Languages size={18} />
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setLanguage('ru')}
-                    className={`px-3 py-1 rounded-lg font-bold text-xs ${settings.language === 'ru' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-500/10 text-tg-hint'}`}
-                  >
-                    RU
-                  </button>
-                  <button 
-                    onClick={() => setLanguage('ro')}
-                    className={`px-3 py-1 rounded-lg font-bold text-xs ${settings.language === 'ro' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-500/10 text-tg-hint'}`}
-                  >
-                    RO
-                  </button>
-                </div>
-              </div>
+          ) : publicConfig.googleAuthEnabled && !getTelegramWebApp() ? (
+            <a href="/api/v1/auth/google/start" className="settings-row"><RowLabel icon={<LogIn />} text={t.googleAccount} /><span className="ml-auto" aria-hidden>›</span></a>
+          ) : (
+            <div className="settings-row"><RowLabel icon={<UserRound />} text={getTelegramWebApp() ? t.telegramAccount : t.guest} /></div>
+          )}
+        </SettingsSection>
+
+        <SettingsSection title={t.reminders} action={<button type="button" onClick={addReminder} className="inline-flex items-center gap-1 rounded-xl bg-emerald-500/10 px-3 py-2 text-xs font-black text-emerald-700 dark:text-emerald-300"><Plus size={15} />{t.addReminder}</button>}>
+          <p className="px-1 pb-3 text-xs leading-5 text-tg-hint">{t.reminderHint}</p>
+          {reminderStatus !== 'idle' && reminderStatus !== 'disabled' && <p className={`px-1 pb-3 text-xs font-bold ${reminderStatus === 'enabled' ? 'text-emerald-600' : reminderStatus === 'saving' ? 'text-tg-hint' : 'text-orange-600'}`}>{reminderStatus === 'enabled' ? t.reminderEnabled : reminderStatus === 'saving' ? t.reminderSaving : reminderStatus === 'denied' ? t.reminderDenied : reminderStatus === 'unsupported' ? t.reminderUnsupported : t.error}</p>}
+          {settings.reminders.length === 0 ? <div className="rounded-2xl border border-dashed border-[var(--line)] p-5 text-center text-sm text-tg-hint">{t.addReminder}</div> : settings.reminders.map((reminder) => (
+            <div className="settings-row" key={reminder.id}>
+              <Bell size={19} className="text-orange-500" />
+              <input type="time" aria-label={t.reminders} value={reminder.localTime} onChange={(event) => updateReminder(reminder.id, {localTime: event.target.value})} className="rounded-xl border border-[var(--line)] bg-tg-bg px-3 py-2 font-black" />
+              <div className="ml-auto flex items-center gap-2"><Switch checked={reminder.enabled} label={t.reminders} onChange={(enabled) => updateReminder(reminder.id, {enabled})} /><button type="button" aria-label={t.remove} onClick={() => removeReminder(reminder.id)} className="rounded-xl p-2 text-red-500 hover:bg-red-500/10"><Trash2 size={18} /></button></div>
             </div>
-          </section>
- 
-          <section className="pt-4 flex justify-center">
-             <button
-                onClick={onReset}
-                className="flex items-center gap-2 text-tg-hint font-bold text-xs uppercase tracking-widest hover:text-red-500 transition-colors bg-tg-secondary-bg px-6 py-3 rounded-full border border-emerald-500/10 shadow-sm"
-             >
-               <Trash2 size={16} />
-               {t.reset}
-             </button>
-          </section>
-        </div>
+          ))}
+        </SettingsSection>
+
+        <SettingsSection title={t.privacy}>
+          <div className="settings-row"><RowLabel icon={<BarChart3 />} text={t.analytics} hint={t.analyticsHint} /><Switch checked={settings.analyticsConsent === 'granted'} label={t.analytics} onChange={(enabled) => onUpdate({...settings, analyticsConsent: enabled ? 'granted' : 'denied'})} /></div>
+          <a href="/privacy.html" target="_blank" rel="noreferrer" className="settings-row w-full text-left"><RowLabel icon={<FileText />} text={t.legal} /><span className="ml-auto" aria-hidden>›</span></a>
+        </SettingsSection>
+
+        <button type="button" onClick={() => setShowReset(true)} className="mx-auto flex items-center gap-2 rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-wider text-red-600 hover:bg-red-500/10"><Trash2 size={17} />{t.reset}</button>
+        <button type="button" onClick={onClose} className="primary-button w-full">{t.save}</button>
       </main>
- 
-      <div className="py-8">
-        <button
-          onClick={onClose}
-          className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/20"
-        >
-          {t.save}
-        </button>
-      </div>
+
+      <Modal open={showReset} onClose={() => setShowReset(false)} title={t.resetTitle}><p className="leading-6 text-tg-hint">{t.resetBody}</p><div className="mt-6 grid grid-cols-2 gap-3"><button type="button" onClick={() => setShowReset(false)} className="secondary-button">{t.cancel}</button><button type="button" onClick={onReset} className="rounded-2xl bg-red-600 px-4 py-3.5 font-black text-white">{t.confirmReset}</button></div></Modal>
     </div>
   );
 }
+
+function SettingsSection({title, action, children}: {title: string; action?: ReactNode; children: ReactNode}) {return <section><div className="mb-3 flex items-center justify-between gap-3 px-1"><h2 className="eyebrow">{title}</h2>{action}</div><div className="surface-card divide-y divide-[var(--line)] px-4">{children}</div></section>}
+function RowLabel({icon, text, hint}: {icon: ReactNode; text: string; hint?: string}) {return <div className="flex min-w-0 items-start gap-3"><span className="mt-0.5 text-emerald-600 [&>svg]:size-[19px]">{icon}</span><span><span className="block font-extrabold">{text}</span>{hint && <span className="mt-1 block max-w-md text-xs leading-5 text-tg-hint">{hint}</span>}</span></div>}
+function Switch({checked, label, onChange}: {checked: boolean; label: string; onChange: (checked: boolean) => void}) {return <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`relative h-7 w-12 shrink-0 rounded-full transition ${checked ? 'bg-emerald-500' : 'bg-slate-400/35'}`}><span className={`absolute top-1 size-5 rounded-full bg-white shadow transition ${checked ? 'left-6' : 'left-1'}`} /></button>}
+function Modal({open, onClose, title, children}: {open: boolean; onClose: () => void; title: string; children: ReactNode}) {return <AnimatePresence>{open && <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="fixed inset-0 z-50 grid place-items-end bg-slate-950/45 p-4 backdrop-blur-sm sm:place-items-center" onClick={onClose}><motion.div initial={{y: 30}} animate={{y: 0}} exit={{y: 30}} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()} className="w-full max-w-md rounded-[2rem] border border-[var(--line)] bg-tg-secondary-bg p-6 shadow-2xl"><h2 className="text-2xl font-black">{title}</h2><div className="mt-3">{children}</div></motion.div></motion.div>}</AnimatePresence>}

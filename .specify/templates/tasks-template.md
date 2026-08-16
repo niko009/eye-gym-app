@@ -186,12 +186,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ## Constitution-driven constraints (Eye Gym)
 
-- When creating tasks for frontend work, include explicit tasks for: i18n externalization,
-  bundle-size measurement, and a privacy review to ensure no third-party scripts are added.
-- Tasks that introduce assets MUST include an item to inline SVGs or embed base64 audio
-  so runtime does not fetch remote assets.
-- Any task that touches payments or premium gating MUST record how codes are collected and
-  how `openLink()` will be used; do not implement in-app payment mechanics.
+- Shared frontend work MUST include normal-browser/PWA and Telegram Mini App verification.
+- Authentication tasks MUST include server-side provider verification and prove that Google
+  and Telegram users are not automatically linked or merged.
+- Sync tasks MUST cover duplicate retries, completed-only history and idempotent guest import.
+- User-facing work MUST include RU/RO/EN localization and relevant accessibility checks.
+- Reminder or analytics tasks MUST include explicit consent and revocation behavior.
+- Data changes MUST include migration, backup/restore compatibility and rollback checks.
+- Telegram tasks MUST keep the bot token server-side and must not trust `initDataUnsafe`.
 
 ### Parallel Opportunities
 

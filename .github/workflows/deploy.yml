@@ -78,5 +78,9 @@ jobs:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
           printf '%s' "$GHCR_TOKEN" | ssh "$SSH_USER@$SSH_HOST" "docker login ghcr.io -u '$GHCR_USERNAME' --password-stdin"
-          ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && WEB_IMAGE='${IMAGE_PREFIX}-web:${IMAGE_TAG}' SERVER_IMAGE='${IMAGE_PREFIX}-server:${IMAGE_TAG}' docker compose --profile tools run --rm migrate && WEB_IMAGE='${IMAGE_PREFIX}-web:${IMAGE_TAG}' SERVER_IMAGE='${IMAGE_PREFIX}-server:${IMAGE_TAG}' docker compose up -d --wait --wait-timeout 120"
-          curl --fail --retry 6 --retry-delay 5 https://eye-gym.bacus.dev/api/health
+          ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && mkdir -p deploy/backups && docker compose exec -T postgres sh -c 'pg_dump -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -Fc' > deploy/backups/pre-deploy-${IMAGE_TAG}.dump"
+          if ! ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && WEB_IMAGE='${IMAGE_PREFIX}-web:${IMAGE_TAG}' SERVER_IMAGE='${IMAGE_PREFIX}-server:${IMAGE_TAG}' docker compose --profile tools run --rm migrate && WEB_IMAGE='${IMAGE_PREFIX}-web:${IMAGE_TAG}' SERVER_IMAGE='${IMAGE_PREFIX}-server:${IMAGE_TAG}' docker compose up -d --wait --wait-timeout 120" || ! curl --fail --retry 6 --retry-delay 5 https://eye-gym.bacus.dev/api/health; then
+            ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && if [ -f .deployed-images ]; then set -a; . ./.deployed-images; set +a; docker compose up -d --wait --wait-timeout 120; fi"
+            exit 1
+          fi
+          ssh "$SSH_USER@$SSH_HOST" "cd '$DEPLOY_PATH' && printf 'WEB_IMAGE=%s\nSERVER_IMAGE=%s\n' '${IMAGE_PREFIX}-web:${IMAGE_TAG}' '${IMAGE_PREFIX}-server:${IMAGE_TAG}' > .deployed-images"

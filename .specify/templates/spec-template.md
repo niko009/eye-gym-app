@@ -92,14 +92,20 @@
 
 ### Constitution-derived Requirements (Eye Gym)
 
-- **CR-001**: UI MUST use the Telegram Web App SDK for theming, alerts, and navigation.
-- **CR-002**: The Web App MUST NOT include third-party analytics or telemetry scripts.
-- **CR-003**: Language support MUST be limited to English, Russian, and Romanian; language
-  detection MUST use `WebApp.initDataUnsafe.user.language_code` with English fallback.
-- **CR-004**: Premium flows MUST use user-entered codes for unlocks and MUST navigate to
-  external payment pages via `openLink()`; no in-app payments.
-- **CR-005**: JS bundle size (gzipped) MUST be ≤ 120 KB; implementations MUST avoid
-  external JS dependencies.
+- **CR-001**: Shared functionality MUST work from the same codebase in browser/PWA and
+  Telegram Mini App modes unless this specification explicitly limits its channel scope.
+- **CR-002**: Google and Telegram identities MUST be verified server-side and MUST remain
+  separate users; automatic matching or merging is forbidden in v1.
+- **CR-003**: Completed workout events and guest imports MUST use stable IDs and idempotent
+  synchronization; incomplete workouts MUST NOT enter statistics.
+- **CR-004**: Secrets MUST remain server-side, analytics and reminders MUST require consent,
+  and authenticated data access MUST be scoped to the current user.
+- **CR-005**: User-facing functionality MUST support Russian, Romanian and English and target
+  WCAG 2.1 AA without medical claims.
+- **CR-006**: Production changes MUST preserve Docker portability, migrations, health checks,
+  backup/restore and rollback behavior as applicable.
+- **CR-007**: Acceptance criteria MUST be independently testable and shared UI changes MUST be
+  verified in both normal-browser and Telegram modes.
 
 *Example of marking unclear requirements:*
 

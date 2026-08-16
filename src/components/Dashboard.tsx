@@ -1,157 +1,143 @@
-import React, { useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Play, Flame, Clock, Award, Settings, BarChart3, Zap, Coffee, Activity, Sparkles } from 'lucide-react';
-import { COMPLEXES } from '../data';
-import { Complex, UserStats, UserSettings } from '../types';
-import { useTelegram } from '../hooks/useTelegram';
+import {Activity, BarChart3, Cloud, Clock3, Coffee, Flame, LoaderCircle, LogIn, Play, Settings, Sparkles, Target, Trophy, WifiOff, Zap} from 'lucide-react';
+import {motion} from 'motion/react';
+import type {ReactNode} from 'react';
+import {COMPLEXES, localize} from '../data';
+import {getMessages} from '../i18n';
+import {useOnlineStatus} from '../hooks/useOnlineStatus';
+import {useTelegram} from '../hooks/useTelegram';
+import type {PublicConfig} from '../api/types';
+import type {Complex, SessionState, UserSettings, UserStats} from '../types';
 
 interface Props {
+  historyStatus: 'loading' | 'ready' | 'error';
+  session: SessionState;
+  publicConfig: PublicConfig;
+  syncing: boolean;
   stats: UserStats;
   settings: UserSettings;
+  onRetryHistory: () => void;
   onSelectComplex: (complex: Complex) => void;
   onOpenStats: () => void;
   onOpenSettings: () => void;
 }
 
-const getComplexIcon = (id: string) => {
-  switch (id) {
-    case 'quick-start': return <Zap size={18} />;
-    case 'work-break': return <Coffee size={18} />;
-    case 'full-recovery': return <Activity size={18} />;
-    case 'tension-relief': return <Sparkles size={18} />;
-    default: return <BarChart3 size={18} />;
-  }
+const iconByComplex = {
+  'quick-start': Zap,
+  'work-break': Coffee,
+  'full-recovery': Activity,
+  'stress-relief': Sparkles,
+  'focus-marathon': Target,
+  'malyshev-method': Trophy,
 };
 
-const getComplexColor = (id: string) => {
-  switch (id) {
-    case 'quick-start': return 'bg-orange-50 text-orange-600 border-orange-100';
-    case 'work-break': return 'bg-blue-50 text-blue-600 border-blue-100';
-    case 'full-recovery': return 'bg-purple-50 text-purple-600 border-purple-100';
-    case 'tension-relief': return 'bg-rose-50 text-rose-600 border-rose-100';
-    default: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-  }
-};
-
-const translations = {
-  ru: {
-    hello: (name: string) => `Привет, ${name}!`,
-    defaultTitle: 'Упражнения для глаз',
-    tagline: 'Здоровье Ваших Глаз',
-    streak: 'Дней',
-    min: 'Мин.',
-    sessions: 'Сессий',
-    workouts: 'Тренировки',
-    available: (count: number) => `${count} Доступно`,
-    minShort: 'Мин',
-    exShort: 'Упр.',
-  },
-  ro: {
-    hello: (name: string) => `Salut, ${name}!`,
-    defaultTitle: 'Exerciții pentru ochi',
-    tagline: 'Sănătatea ochilor tăi',
-    streak: 'Zile',
-    min: 'Min.',
-    sessions: 'Sesiuni',
-    workouts: 'Antrenamente',
-    available: (count: number) => `${count} Disponibile`,
-    minShort: 'Min',
-    exShort: 'Ex.',
-  }
-};
-
-export default function Dashboard({ stats, settings, onSelectComplex, onOpenStats, onOpenSettings }: Props) {
-  const { hapticFeedback, user } = useTelegram();
-  const t = translations[settings.language || 'ru'] || translations.ru;
+export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, settings, onRetryHistory, onSelectComplex, onOpenStats, onOpenSettings}: Props) {
+  const t = getMessages(settings.language);
+  const online = useOnlineStatus();
+  const {hapticFeedback, isTelegram} = useTelegram();
 
   return (
-    <div className="min-h-screen pb-24 bg-tg-bg">
-      {/* Header */}
-      <header className="bg-tg-secondary-bg px-6 pt-safe pb-8 rounded-b-[40px] shadow-sm border-b border-emerald-100/20">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-              <BarChart3 size={24} />
+    <div className="min-h-[var(--tg-viewport-stable-height,100dvh)] pb-28">
+      <header className="relative overflow-hidden rounded-b-[2.75rem] border-b border-[var(--line)] bg-tg-secondary-bg px-5 pb-8 pt-safe shadow-[0_24px_70px_-45px_rgba(7,77,67,.55)] sm:px-8">
+        <div aria-hidden="true" className="absolute -right-20 -top-28 size-72 rounded-full border-[36px] border-emerald-500/10" />
+        <div className="relative mx-auto max-w-4xl">
+          <div className="mb-9 flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="grid size-12 shrink-0 place-items-center rounded-[1.15rem] bg-emerald-600 text-white shadow-lg shadow-emerald-900/15">
+                <span className="text-xl font-black">EG</span>
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-xl font-black tracking-tight">{session.user ? t.greeting(session.user.displayName.split(' ')[0]!) : t.appName}</h1>
+                <p className="mt-0.5 truncate text-xs font-bold text-emerald-700 dark:text-emerald-300">{t.tagline}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-black text-tg-text tracking-tight leading-none">
-                {user?.first_name ? t.hello(user.first_name) : t.defaultTitle}
-              </h1>
-              <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mt-1">{t.tagline}</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => { hapticFeedback(); onOpenSettings(); }}
-              className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-600 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20"
-            >
-              <Settings size={20} />
+            <button type="button" aria-label={t.settings} onClick={() => {hapticFeedback(); onOpenSettings();}} className="interactive-icon">
+              <Settings size={21} />
             </button>
           </div>
-        </div>
- 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-tg-bg border border-emerald-500/10 p-4 rounded-3xl flex flex-col items-center shadow-sm">
-            <Flame className="text-orange-500 mb-1" size={20} />
-            <span className="text-xl font-black text-tg-text leading-none">{stats.streak}</span>
-            <span className="text-[10px] text-tg-hint font-bold uppercase tracking-wider mt-1">{t.streak}</span>
+
+          <div className="mb-4 flex items-center gap-2 text-xs font-extrabold text-tg-hint">
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 ${online ? 'border-emerald-500/15 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'border-orange-500/15 bg-orange-500/10 text-orange-700 dark:text-orange-300'}`}>
+              {online ? <span className="size-2 rounded-full bg-emerald-500" /> : <WifiOff size={13} />}
+              {online ? t.online : t.offline}
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-tg-bg px-3 py-1.5">
+              {session.status === 'loading' ? <LoaderCircle className="animate-spin" size={13} /> : session.status === 'authenticated' ? <Cloud size={13} /> : null}
+              {session.status === 'loading' ? t.loading : session.user ? `${session.user.provider === 'telegram' ? 'Telegram' : 'Google'} · ${syncing ? t.loading : session.user.displayName}` : isTelegram ? 'Telegram Mini App' : t.guest}
+            </span>
           </div>
-          <div className="bg-tg-bg border border-emerald-500/10 p-4 rounded-3xl flex flex-col items-center shadow-sm">
-            <Clock className="text-emerald-500 mb-1" size={20} />
-            <span className="text-xl font-black text-tg-text leading-none">{stats.totalTimeMinutes}</span>
-            <span className="text-[10px] text-tg-hint font-bold uppercase tracking-wider mt-1">{t.min}</span>
-          </div>
-          <div className="bg-tg-bg border border-emerald-500/10 p-4 rounded-3xl flex flex-col items-center shadow-sm">
-            <Award className="text-blue-500 mb-1" size={20} />
-            <span className="text-xl font-black text-tg-text leading-none">{stats.completedWorkouts}</span>
-            <span className="text-[10px] text-tg-hint font-bold uppercase tracking-wider mt-1">{t.sessions}</span>
+
+          {session.status === 'guest' && publicConfig.googleAuthEnabled && !isTelegram && (
+            <a href="/api/v1/auth/google/start" className="mb-5 inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-800 shadow-sm ring-1 ring-slate-900/10"><LogIn size={18} />{t.googleAccount}</a>
+          )}
+
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+            <Summary icon={<Flame size={20} />} value={stats.currentStreak} label={t.days} color="text-orange-500" />
+            <Summary icon={<Clock3 size={20} />} value={Math.round(stats.totalTimeSeconds / 60)} label={t.minutes} color="text-emerald-600" />
+            <Summary icon={<Trophy size={20} />} value={stats.completedWorkouts} label={t.sessions} color="text-sky-600" />
           </div>
         </div>
       </header>
- 
-      {/* Complexes List */}
-      <main className="px-6 mt-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-black text-tg-text tracking-tight">{t.workouts}</h2>
-          <span className="text-xs text-tg-hint font-bold uppercase tracking-widest">{t.available(COMPLEXES.length)}</span>
+
+      <main className="mx-auto max-w-4xl px-5 py-9 sm:px-8">
+        {historyStatus === 'error' && (
+          <button type="button" onClick={onRetryHistory} className="mb-6 w-full rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm font-bold text-red-700 dark:text-red-300">
+            {t.error}. {t.retry}
+          </button>
+        )}
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <p className="eyebrow">{t.available(COMPLEXES.length)}</p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight">{t.workouts}</h2>
+          </div>
+          <button type="button" onClick={onOpenStats} className="inline-flex items-center gap-2 rounded-2xl border border-[var(--line)] bg-tg-secondary-bg px-3.5 py-2.5 text-xs font-black text-emerald-700 shadow-sm dark:text-emerald-300">
+            <BarChart3 size={17} /> {t.stats}
+          </button>
         </div>
- 
-        <div className="space-y-4">
-          {COMPLEXES.map((complex) => (
-            <motion.div
-              key={complex.id}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => { hapticFeedback(); onSelectComplex(complex); }}
-              className="group bg-tg-secondary-bg p-5 rounded-[28px] shadow-sm border border-emerald-500/10 flex items-start gap-4 cursor-pointer hover:border-emerald-500/30 transition-all"
-            >
-              <div className={`w-12 h-12 flex-shrink-0 rounded-2xl flex items-center justify-center border ${getComplexColor(complex.id)} shadow-sm`}>
-                {getComplexIcon(complex.id)}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                   <h3 className="text-lg font-bold text-tg-text leading-tight">
-                     {settings.language === 'ro' ? complex.nameRo : complex.name}
-                   </h3>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {COMPLEXES.map((complex, index) => {
+            const Icon = iconByComplex[complex.id as keyof typeof iconByComplex] ?? Activity;
+            const exerciseCount = complex.selection.type === 'fixed' ? complex.selection.exerciseIds.length : complex.selection.count;
+            return (
+              <motion.button
+                type="button"
+                key={complex.id}
+                initial={{opacity: 0, y: 18}}
+                animate={{opacity: 1, y: 0}}
+                transition={{delay: index * 0.045}}
+                whileTap={{scale: 0.985}}
+                onClick={() => {hapticFeedback(); onSelectComplex(complex);}}
+                className="group relative overflow-hidden rounded-[2rem] border border-[var(--line)] bg-tg-secondary-bg p-5 text-left shadow-[0_18px_50px_-38px_rgba(7,77,67,.7)] transition hover:-translate-y-0.5 hover:border-emerald-500/35"
+              >
+                <div aria-hidden="true" className="absolute -bottom-8 -right-8 size-32 rounded-full bg-emerald-500/5 transition group-hover:scale-125" />
+                <div className="relative flex gap-4">
+                  <div className="grid size-12 shrink-0 place-items-center rounded-2xl border border-emerald-500/15 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"><Icon size={21} /></div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-extrabold leading-tight">{localize(complex.name, settings.language)}</h3>
+                    <p className="mt-1.5 min-h-10 text-sm leading-5 text-tg-hint">{localize(complex.description, settings.language)}</p>
+                    <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-black uppercase tracking-wide">
+                      <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-emerald-700 dark:text-emerald-300">{complex.advertisedMinutes} {t.minuteShort}</span>
+                      <span className="rounded-full bg-slate-500/10 px-2.5 py-1 text-tg-hint">{exerciseCount} {t.exerciseShort}</span>
+                    </div>
+                  </div>
+                  <span className="grid size-10 shrink-0 place-items-center self-center rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-800/15"><Play size={16} fill="currentColor" /></span>
                 </div>
-                <p className="text-sm text-tg-hint line-clamp-1">
-                  {settings.language === 'ro' ? complex.descriptionRo : complex.description}
-                </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                    <Clock size={12} /> {complex.durationTotal} {t.minShort}
-                  </span>
-                  <span className="flex items-center gap-1.5 text-[10px] font-black text-tg-hint uppercase tracking-wider">
-                    <Award size={12} /> {complex.exercises.length} {t.exShort}
-                  </span>
-                </div>
-              </div>
-              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors text-emerald-500 flex-shrink-0 self-center">
-                <Play size={16} fill="currentColor" strokeWidth={0} />
-              </div>
-            </motion.div>
-          ))}
+              </motion.button>
+            );
+          })}
         </div>
+        <footer className="mt-10 flex flex-wrap items-center justify-center gap-4 border-t border-[var(--line)] pt-6 text-xs font-bold text-tg-hint"><span>© 2026 Eye Gym</span><a href="/privacy.html" target="_blank" rel="noreferrer" className="text-emerald-700 underline decoration-emerald-500/30 underline-offset-4 dark:text-emerald-300">{t.legal}</a><span>{t.medicalDisclaimer}</span></footer>
       </main>
+    </div>
+  );
+}
+
+function Summary({icon, value, label, color}: {icon: ReactNode; value: number; label: string; color: string}) {
+  return (
+    <div className="rounded-[1.55rem] border border-[var(--line)] bg-tg-bg/70 p-3 text-center shadow-sm backdrop-blur sm:p-4">
+      <div className={`mx-auto mb-1.5 flex justify-center ${color}`}>{icon}</div>
+      <div className="text-2xl font-black tabular-nums">{value}</div>
+      <div className="mt-0.5 text-[10px] font-black uppercase tracking-widest text-tg-hint">{label}</div>
     </div>
   );
 }
