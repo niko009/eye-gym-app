@@ -263,6 +263,20 @@ jobs:
           fi
           sudo rm -f "$BACKUP"
 
+      - name: Configure dynamic Docker Caddy through Admin API
+        if: steps.docker_caddy.outputs.flavor == 'docker-proxy'
+        run: |
+          set -euo pipefail
+          CONTAINER='${{ steps.docker_caddy.outputs.container }}'
+          CURRENT="$RUNNER_TEMP/eye-gym-caddy-current.json"
+          UPDATED="$RUNNER_TEMP/eye-gym-caddy-updated.json"
+          docker exec "$CONTAINER" wget -qO- http://127.0.0.1:2019/config/ > "$CURRENT"
+          python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_json.py \
+            "$CURRENT" "$UPDATED" eye-gym.bacus.dev api:8080
+          docker cp "$UPDATED" "$CONTAINER:/tmp/eye-gym-caddy.json"
+          docker exec "$CONTAINER" caddy validate --config /tmp/eye-gym-caddy.json
+          docker exec "$CONTAINER" caddy reload --config /tmp/eye-gym-caddy.json
+
       - name: Configure standalone Caddy
         if: steps.caddy_runtime.outputs.mode == 'process'
         run: |
