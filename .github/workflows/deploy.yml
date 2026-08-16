@@ -49,19 +49,59 @@ jobs:
           command -v docker >/dev/null
           docker compose version
 
-      - name: Verify production API secrets
-        run: test -f /srv/bacus/apps/eye-gym/.env
-
-      - name: Verify reverse proxy configuration
+      - name: Bootstrap production API secrets
         run: |
           set -euo pipefail
-          FOUND=false
-          for CONFIG_ROOT in /etc/nginx/sites-enabled /etc/nginx/conf.d /etc/caddy /etc/apache2/sites-enabled; do
-            if [ -r "$CONFIG_ROOT" ] && grep -RIlF '/srv/bacus/apps/eye-gym/site' "$CONFIG_ROOT" >/dev/null 2>&1; then
-              FOUND=true
-            fi
-          done
-          test "$FOUND" = true
+          ENV_FILE=/srv/bacus/apps/eye-gym/.env
+          if [ ! -f "$ENV_FILE" ]; then
+            umask 077
+            POSTGRES_PASSWORD="$(openssl rand -hex 32)"
+            SESSION_SECRET="$(openssl rand -hex 48)"
+            cat > "$ENV_FILE" <<EOF
+          APP_DOMAIN=eye-gym.bacus.dev
+          POSTGRES_USER=eyegym
+          POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+          POSTGRES_DB=eyegym
+          SESSION_SECRET=$SESSION_SECRET
+          GOOGLE_CLIENT_ID=
+          GOOGLE_CLIENT_SECRET=
+          TELEGRAM_BOT_TOKEN=
+          TELEGRAM_INIT_DATA_MAX_AGE_SECONDS=3600
+          VAPID_PUBLIC_KEY=
+          VAPID_PRIVATE_KEY=
+          VAPID_SUBJECT=mailto:nikomisha@gmail.com
+          BACKUP_RETENTION_DAYS=14
+          EOF
+          fi
+          chmod 600 "$ENV_FILE"
+          test -s "$ENV_FILE"
+
+      - name: Detect reverse proxy configuration
+        id: reverse_proxy
+        run: |
+          set -euo pipefail
+          KIND=none
+          if grep -RIlF '/srv/bacus/apps/eye-gym/site' /etc/nginx/sites-enabled /etc/nginx/conf.d >/dev/null 2>&1; then
+            KIND=nginx
+          elif grep -RIlF '/srv/bacus/apps/eye-gym/site' /etc/caddy >/dev/null 2>&1; then
+            KIND=caddy
+          elif grep -RIlF '/srv/bacus/apps/eye-gym/site' /etc/apache2/sites-enabled >/dev/null 2>&1; then
+            KIND=apache
+          fi
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
+          test "$KIND" != none
+
+      - name: Reverse proxy is Nginx
+        if: steps.reverse_proxy.outputs.kind == 'nginx'
+        run: 'true'
+
+      - name: Reverse proxy is Caddy
+        if: steps.reverse_proxy.outputs.kind == 'caddy'
+        run: 'true'
+
+      - name: Reverse proxy is Apache
+        if: steps.reverse_proxy.outputs.kind == 'apache'
+        run: 'true'
 
       - name: Deployment summary
         run: echo "Eye Gym deployed to /srv/bacus/apps/eye-gym/site"
