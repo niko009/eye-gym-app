@@ -17,4 +17,4 @@ export interface ServerSettings {
 }
 
 export type ServerWorkout = Omit<WorkoutRecord, 'syncedAt'>;
-export interface SessionResponse {user: UserProfile}
+export interface SessionResponse {user: UserProfile | null}

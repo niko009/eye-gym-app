@@ -11,7 +11,7 @@ import WorkoutSession from './components/WorkoutSession';
 import {COMPLEX_BY_ID} from './data';
 import {createWorkoutPlan} from './domain/workouts';
 import {calculateStats} from './domain/stats';
-import {api, ApiError} from './api/client';
+import {api} from './api/client';
 import {configureAnalytics, track} from './analytics';
 import {ensureAudioPack} from './audio/packs';
 import {bootstrapAccount, synchronize} from './api/sync';
@@ -65,18 +65,24 @@ export default function App() {
       }
       try {
         const {user} = await api.me();
-        if (!cancelled) setSession({status: 'authenticated', user});
-      } catch (error) {
+        if (user) {
+          if (!cancelled) setSession({status: 'authenticated', user});
+          return;
+        }
         const telegram = getTelegramWebApp();
-        if (error instanceof ApiError && error.status === 401 && telegram && available.telegramAuthEnabled) {
+        if (telegram && available.telegramAuthEnabled) {
           try {
-            const {user} = await api.telegramLogin(telegram.initData);
-            if (!cancelled) setSession({status: 'authenticated', user});
-            return;
+            const {user: telegramUser} = await api.telegramLogin(telegram.initData);
+            if (telegramUser) {
+              if (!cancelled) setSession({status: 'authenticated', user: telegramUser});
+              return;
+            }
           } catch {
             // Invalid or unavailable Telegram auth falls back to a local guest safely.
           }
         }
+        if (!cancelled) setSession({status: 'guest', user: null});
+      } catch {
         if (!cancelled) setSession({status: 'guest', user: null});
       }
     };

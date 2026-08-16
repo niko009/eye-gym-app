@@ -5,6 +5,7 @@ import {pool} from '../db/pool.js';
 import {timeZoneSchema} from '../validation.js';
 
 const router = Router();
+router.get('/me', (request, response) => response.json({user: request.auth ?? null}));
 router.use(requireSession);
 
 const settingsSchema = z.object({
@@ -24,8 +25,6 @@ const workoutSchema = z.object({
   completedAt: z.string().datetime(),
   durationSeconds: z.number().int().positive().max(7200),
 });
-
-router.get('/me', (request, response) => response.json({user: request.auth}));
 
 router.get('/settings', async (request, response) => {
   const result = await pool.query(
