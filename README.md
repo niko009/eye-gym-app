@@ -60,5 +60,6 @@ The Telegram client is another delivery channel for this project, not a separate
 - Browser reminders use Web Push. Telegram reminders are delivered by the project bot after an explicit opt-in.
 
 Product requirements are in [`docs/WEB_PWA_SPEC.md`](docs/WEB_PWA_SPEC.md). Architecture decisions are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+The current comparison with similar break and eye-relaxation products is in [`docs/COMPETITOR_REVIEW.md`](docs/COMPETITOR_REVIEW.md).
 Production setup, backup, restore, rollback and Telegram verification are documented in [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 The current implementation and remaining production inputs are tracked in [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).

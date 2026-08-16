@@ -8,6 +8,7 @@ import PwaUpdatePrompt from './components/PwaUpdatePrompt';
 import SettingsView from './components/SettingsView';
 import StatsView from './components/StatsView';
 import WorkoutSession from './components/WorkoutSession';
+import {BreakOverlay} from './components/BreakTimer';
 import {COMPLEX_BY_ID} from './data';
 import {createWorkoutPlan} from './domain/workouts';
 import {calculateStats} from './domain/stats';
@@ -18,6 +19,7 @@ import {bootstrapAccount, synchronize} from './api/sync';
 import type {PublicConfig} from './api/types';
 import {getTelegramWebApp} from './platform/telegram';
 import {configureReminders} from './push';
+import {useBreakTimer} from './hooks/useBreakTimer';
 import {clearWorkouts, listWorkouts, saveWorkout, subscribeToWorkoutChanges} from './storage/database';
 import {defaultSettings, getSettings, resetSettings, saveSettings} from './storage/settings';
 import type {Complex, SessionState, UserSettings, WorkoutPlan, WorkoutRecord} from './types';
@@ -35,6 +37,7 @@ export default function App() {
   const [publicConfig, setPublicConfig] = useState<PublicConfig>({googleAuthEnabled: false, telegramAuthEnabled: false, pushEnabled: false, vapidPublicKey: null});
   const [syncing, setSyncing] = useState(false);
   const [reminderStatus, setReminderStatus] = useState<'idle' | 'saving' | 'enabled' | 'disabled' | 'unsupported' | 'denied' | 'error'>('idle');
+  const breakTimer = useBreakTimer(settings.language);
   const trackedUserId = useRef<string | null>(null);
   const trackedLaunch = useRef(false);
 
@@ -243,6 +246,7 @@ export default function App() {
               syncing={syncing}
               stats={stats}
               settings={settings}
+              breakTimer={breakTimer}
               onRetryHistory={() => void loadHistory()}
               onSelectComplex={requestWorkout}
               onOpenStats={() => setView('stats')}
@@ -263,6 +267,7 @@ export default function App() {
       </AnimatePresence>
 
       <AnimatePresence>
+        <BreakOverlay timer={breakTimer} language={settings.language} suppressed={Boolean(activePlan || pendingComplex)} />
         {pendingComplex && !activePlan && (
           <MedicalNotice language={settings.language} onAccept={acceptMedicalNotice} onCancel={() => setPendingComplex(null)} />
         )}

@@ -6,6 +6,8 @@ import {getMessages} from '../i18n';
 import {useOnlineStatus} from '../hooks/useOnlineStatus';
 import {useTelegram} from '../hooks/useTelegram';
 import type {PublicConfig} from '../api/types';
+import {BreakTimerCard} from './BreakTimer';
+import type {BreakTimerController} from '../hooks/useBreakTimer';
 import type {Complex, SessionState, UserSettings, UserStats} from '../types';
 
 interface Props {
@@ -15,6 +17,7 @@ interface Props {
   syncing: boolean;
   stats: UserStats;
   settings: UserSettings;
+  breakTimer: BreakTimerController;
   onRetryHistory: () => void;
   onSelectComplex: (complex: Complex) => void;
   onOpenStats: () => void;
@@ -30,7 +33,7 @@ const iconByComplex = {
   'malyshev-method': Trophy,
 };
 
-export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, settings, onRetryHistory, onSelectComplex, onOpenStats, onOpenSettings}: Props) {
+export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, settings, breakTimer, onRetryHistory, onSelectComplex, onOpenStats, onOpenSettings}: Props) {
   const t = getMessages(settings.language);
   const online = useOnlineStatus();
   const {hapticFeedback, isTelegram} = useTelegram();
@@ -96,6 +99,8 @@ export default function Dashboard({historyStatus, session, publicConfig, syncing
             </button>
           </div>
         </section>
+
+        <BreakTimerCard timer={breakTimer} language={settings.language} />
 
         {historyStatus !== 'error' && stats.completedWorkouts === 0 && (
           <section className="mb-7 rounded-[1.75rem] border border-dashed border-emerald-500/30 bg-emerald-500/5 p-5">
