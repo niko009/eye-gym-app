@@ -146,33 +146,30 @@ jobs:
           "${COMPOSE[@]}" ps
           exit 1
 
-      - name: Configure Caddy API route and security headers
+      - name: Detect Caddy runtime
         if: steps.reverse_proxy.outputs.kind == 'caddy'
+        id: caddy_runtime
         run: |
           set -euo pipefail
-          DOMAIN=eye-gym.bacus.dev
-          CONFIG="$(sudo grep -RIlF "$DOMAIN" /etc/caddy 2>/dev/null | head -n 1)"
-          test -n "$CONFIG"
-          BACKUP="${CONFIG}.eye-gym-backup"
-          sudo cp "$CONFIG" "$BACKUP"
-          sudo python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG" "$DOMAIN"
-          if ! sudo caddy validate --config "$CONFIG"; then
-            sudo cp "$BACKUP" "$CONFIG"
-            exit 1
+          MODE=process
+          if systemctl is-active --quiet caddy 2>/dev/null; then
+            MODE=systemd
+          elif docker ps --format '{{.Image}} {{.Names}}' | grep -qi caddy; then
+            MODE=docker
           fi
-          sudo systemctl reload caddy
-          rm -f "$BACKUP" 2>/dev/null || sudo rm -f "$BACKUP"
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
-      - name: Verify public API
-        run: |
-          set -euo pipefail
-          for ATTEMPT in $(seq 1 20); do
-            if curl --fail --silent https://eye-gym.bacus.dev/api/health >/dev/null; then
-              exit 0
-            fi
-            sleep 3
-          done
-          exit 1
+      - name: Caddy runs with systemd
+        if: steps.caddy_runtime.outputs.mode == 'systemd'
+        run: 'true'
+
+      - name: Caddy runs in Docker
+        if: steps.caddy_runtime.outputs.mode == 'docker'
+        run: 'true'
+
+      - name: Caddy runs as a standalone process
+        if: steps.caddy_runtime.outputs.mode == 'process'
+        run: 'true'
 
       - name: Deployment summary
-        run: echo "Eye Gym web and API deployed successfully"
+        run: echo "Eye Gym web and private API services deployed successfully"
