@@ -307,9 +307,8 @@ jobs:
         run: |
           set -euo pipefail
           for ATTEMPT in $(seq 1 20); do
-            if curl --fail --silent https://eye-gym.bacus.dev/api/health >/dev/null \
-              && curl --fail --silent https://eye-gym.bacus.dev/robots.txt | grep -q 'sitemap.xml' \
-              && curl --fail --silent https://eye-gym.bacus.dev/sitemap.xml | grep -q 'about.html'; then
+            if curl --fail --silent --location --max-redirs 3 https://eye-gym.bacus.dev/api/health | grep -q '"status":"ok"' \
+              && curl --fail --silent --location --max-redirs 3 https://eye-gym.bacus.dev/sitemap.xml | grep -q 'about.html'; then
               exit 0
             fi
             sleep 3

@@ -25,7 +25,7 @@ class ConfigureCaddyJsonTest(unittest.TestCase):
         self.assertEqual(ids.count(IMMUTABLE_CACHE_ROUTE_ID), 1)
         self.assertEqual(ids.count(FRESH_CACHE_ROUTE_ID), 1)
         redirect = next(route for route in routes if route.get("@id") == REDIRECT_ROUTE_ID)
-        self.assertEqual(redirect["match"][0]["protocol"], "http")
+        self.assertEqual(redirect["match"][0]["header"]["X-Forwarded-Proto"], ["http"])
         self.assertEqual(redirect["handle"][0]["status_code"], 308)
 
 

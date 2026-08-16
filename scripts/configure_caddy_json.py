@@ -40,7 +40,7 @@ def configure(config: dict[str, Any], domain: str, upstream: str) -> dict[str, A
     }
     redirect_route = {
         "@id": REDIRECT_ROUTE_ID,
-        "match": [{"host": [domain], "protocol": "http"}],
+        "match": [{"host": [domain], "header": {"X-Forwarded-Proto": ["http"]}}],
         "handle": [
             {
                 "handler": "static_response",

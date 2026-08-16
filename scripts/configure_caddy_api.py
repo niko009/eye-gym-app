@@ -8,7 +8,7 @@ MARKER = "# BEGIN EYE GYM MANAGED ROUTES"
 END_MARKER = "# END EYE GYM MANAGED ROUTES"
 BLOCK = """
   # BEGIN EYE GYM MANAGED ROUTES
-  @eyeGymHttp protocol http
+  @eyeGymHttp header X-Forwarded-Proto http
   redir @eyeGymHttp https://{host}{uri} permanent
 
   handle /api/* {
