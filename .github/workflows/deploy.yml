@@ -215,8 +215,9 @@ jobs:
           if [ -z "$CONFIG_SOURCE" ]; then
             FLAVOR=docker-proxy
           fi
-          if [ "$FLAVOR" = file ]; then
-            sudo test -f "$CONFIG_SOURCE"
+          if [ "$FLAVOR" = file ] && ! sudo test -f "$CONFIG_SOURCE"; then
+            FLAVOR=docker-proxy
+            CONFIG_SOURCE=
           fi
           echo "container=$CONTAINER" >> "$GITHUB_OUTPUT"
           echo "config_source=$CONFIG_SOURCE" >> "$GITHUB_OUTPUT"
