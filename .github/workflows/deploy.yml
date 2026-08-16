@@ -43,34 +43,25 @@ jobs:
           cp -a dist/. "$TARGET"/
           test -f "$TARGET/index.html"
 
-      - name: Inspect API deployment prerequisites
+      - name: Verify Docker for API deployment
         run: |
           set -euo pipefail
-          if command -v docker >/dev/null 2>&1; then
-            echo "docker=available"
-            docker compose version || true
-          else
-            echo "docker=missing"
-          fi
+          command -v docker >/dev/null
+          docker compose version
 
-          if [ -f /srv/bacus/apps/eye-gym/.env ]; then
-            echo "production_env=present"
-          else
-            echo "production_env=missing"
-          fi
+      - name: Verify production API secrets
+        run: test -f /srv/bacus/apps/eye-gym/.env
 
-          if sudo -n true 2>/dev/null; then
-            echo "noninteractive_sudo=available"
-          else
-            echo "noninteractive_sudo=unavailable"
-          fi
-
-          echo "static_site_proxy_configs:"
-          for CONFIG_ROOT in /etc/nginx/sites-enabled /etc/nginx/conf.d /etc/caddy; do
-            if [ -r "$CONFIG_ROOT" ]; then
-              grep -RIlF '/srv/bacus/apps/eye-gym/site' "$CONFIG_ROOT" 2>/dev/null || true
+      - name: Verify reverse proxy configuration
+        run: |
+          set -euo pipefail
+          FOUND=false
+          for CONFIG_ROOT in /etc/nginx/sites-enabled /etc/nginx/conf.d /etc/caddy /etc/apache2/sites-enabled; do
+            if [ -r "$CONFIG_ROOT" ] && grep -RIlF '/srv/bacus/apps/eye-gym/site' "$CONFIG_ROOT" >/dev/null 2>&1; then
+              FOUND=true
             fi
           done
+          test "$FOUND" = true
 
       - name: Deployment summary
         run: echo "Eye Gym deployed to /srv/bacus/apps/eye-gym/site"
