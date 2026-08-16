@@ -193,11 +193,11 @@ jobs:
           fi
           sudo rm -f "$BACKUP"
 
-      - name: Configure Docker Caddy
+      - name: Locate Docker Caddy configuration
         if: steps.caddy_runtime.outputs.mode == 'docker'
+        id: docker_caddy
         run: |
           set -euo pipefail
-          DOMAIN=eye-gym.bacus.dev
           CONTAINER="$(docker ps --format '{{.ID}} {{.Image}} {{.Names}}' | awk 'tolower($0) ~ /caddy/ {print $1; exit}')"
           test -n "$CONTAINER"
           CONFIG_SOURCE="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' "$CONTAINER")"
@@ -206,10 +206,29 @@ jobs:
             CONFIG_SOURCE="${CONFIG_DIR}/Caddyfile"
           fi
           sudo test -f "$CONFIG_SOURCE"
+          echo "container=$CONTAINER" >> "$GITHUB_OUTPUT"
+          echo "config_source=$CONFIG_SOURCE" >> "$GITHUB_OUTPUT"
+
+      - name: Patch Docker Caddy configuration
+        if: steps.caddy_runtime.outputs.mode == 'docker'
+        run: |
+          set -euo pipefail
+          CONFIG_SOURCE='${{ steps.docker_caddy.outputs.config_source }}'
           BACKUP="${CONFIG_SOURCE}.eye-gym-backup"
           sudo cp "$CONFIG_SOURCE" "$BACKUP"
-          sudo python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG_SOURCE" "$DOMAIN" api:8080
-          docker network connect eye-gym_default "$CONTAINER" 2>/dev/null || true
+          sudo python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG_SOURCE" eye-gym.bacus.dev api:8080
+
+      - name: Connect Docker Caddy to API network
+        if: steps.caddy_runtime.outputs.mode == 'docker'
+        run: docker network connect eye-gym_default '${{ steps.docker_caddy.outputs.container }}' 2>/dev/null || true
+
+      - name: Validate and reload Docker Caddy
+        if: steps.caddy_runtime.outputs.mode == 'docker'
+        run: |
+          set -euo pipefail
+          CONTAINER='${{ steps.docker_caddy.outputs.container }}'
+          CONFIG_SOURCE='${{ steps.docker_caddy.outputs.config_source }}'
+          BACKUP="${CONFIG_SOURCE}.eye-gym-backup"
           if ! docker exec "$CONTAINER" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile; then
             sudo cp "$BACKUP" "$CONFIG_SOURCE"
             exit 1
