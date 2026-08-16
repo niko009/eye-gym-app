@@ -171,5 +171,89 @@ jobs:
         if: steps.caddy_runtime.outputs.mode == 'process'
         run: 'true'
 
+      - name: Configure systemd Caddy
+        if: steps.caddy_runtime.outputs.mode == 'systemd'
+        run: |
+          set -euo pipefail
+          DOMAIN=eye-gym.bacus.dev
+          CONFIG="$(sudo systemctl cat caddy | sed -nE 's/.*--config[= ]+([^ ]+).*/\1/p' | tail -n 1)"
+          CONFIG="${CONFIG:-/etc/caddy/Caddyfile}"
+          test -f "$CONFIG"
+          BACKUP="${CONFIG}.eye-gym-backup"
+          sudo cp "$CONFIG" "$BACKUP"
+          sudo python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG" "$DOMAIN" 127.0.0.1:18080
+          if ! sudo caddy validate --config "$CONFIG" --adapter caddyfile; then
+            sudo cp "$BACKUP" "$CONFIG"
+            exit 1
+          fi
+          if ! sudo systemctl reload caddy; then
+            sudo cp "$BACKUP" "$CONFIG"
+            sudo systemctl reload caddy
+            exit 1
+          fi
+          sudo rm -f "$BACKUP"
+
+      - name: Configure Docker Caddy
+        if: steps.caddy_runtime.outputs.mode == 'docker'
+        run: |
+          set -euo pipefail
+          DOMAIN=eye-gym.bacus.dev
+          CONTAINER="$(docker ps --format '{{.ID}} {{.Image}} {{.Names}}' | awk 'tolower($0) ~ /caddy/ {print $1; exit}')"
+          test -n "$CONTAINER"
+          CONFIG_SOURCE="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy/Caddyfile"}}{{.Source}}{{end}}{{end}}' "$CONTAINER")"
+          if [ -z "$CONFIG_SOURCE" ]; then
+            CONFIG_DIR="$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/etc/caddy"}}{{.Source}}{{end}}{{end}}' "$CONTAINER")"
+            CONFIG_SOURCE="${CONFIG_DIR}/Caddyfile"
+          fi
+          test -f "$CONFIG_SOURCE"
+          BACKUP="${CONFIG_SOURCE}.eye-gym-backup"
+          cp "$CONFIG_SOURCE" "$BACKUP"
+          python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG_SOURCE" "$DOMAIN" api:8080
+          docker network connect eye-gym_default "$CONTAINER" 2>/dev/null || true
+          if ! docker exec "$CONTAINER" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile; then
+            cp "$BACKUP" "$CONFIG_SOURCE"
+            exit 1
+          fi
+          if ! docker exec "$CONTAINER" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile; then
+            cp "$BACKUP" "$CONFIG_SOURCE"
+            docker exec "$CONTAINER" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+            exit 1
+          fi
+          rm -f "$BACKUP"
+
+      - name: Configure standalone Caddy
+        if: steps.caddy_runtime.outputs.mode == 'process'
+        run: |
+          set -euo pipefail
+          DOMAIN=eye-gym.bacus.dev
+          PID="$(pgrep -x caddy | head -n 1)"
+          ARGS="$(tr '\0' ' ' < "/proc/$PID/cmdline")"
+          CONFIG="$(printf '%s\n' "$ARGS" | sed -nE 's/.*--config[= ]+([^ ]+).*/\1/p')"
+          test -n "$CONFIG"
+          BACKUP="${CONFIG}.eye-gym-backup"
+          cp "$CONFIG" "$BACKUP"
+          python3 /srv/bacus/apps/eye-gym/runtime/scripts/configure_caddy_api.py "$CONFIG" "$DOMAIN" 127.0.0.1:18080
+          if ! caddy validate --config "$CONFIG" --adapter caddyfile; then
+            cp "$BACKUP" "$CONFIG"
+            exit 1
+          fi
+          if ! caddy reload --config "$CONFIG" --adapter caddyfile; then
+            cp "$BACKUP" "$CONFIG"
+            caddy reload --config "$CONFIG" --adapter caddyfile
+            exit 1
+          fi
+          rm -f "$BACKUP"
+
+      - name: Verify public API
+        run: |
+          set -euo pipefail
+          for ATTEMPT in $(seq 1 20); do
+            if curl --fail --silent https://eye-gym.bacus.dev/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
+
       - name: Deployment summary
-        run: echo "Eye Gym web and private API services deployed successfully"
+        run: echo "Eye Gym web and public API deployed successfully"
