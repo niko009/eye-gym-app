@@ -10,19 +10,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-eye-gym.jpg', 'legal.css', 'about.html', 'contact.html', 'privacy.html', 'terms.html', 'robots.txt', 'sitemap.xml'],
+      includeAssets: ['icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og-eye-gym.jpg', 'legal.css', 'seo.css', 'about.html', 'contact.html', 'privacy.html', 'terms.html', 'robots.txt', 'sitemap.xml'],
       manifest: {
-        name: 'Eye Gym — упражнения для глаз',
-        short_name: 'Eye Gym',
-        description: 'Короткие комплексы упражнений для расслабления глаз.',
-        theme_color: '#083f3b',
-        background_color: '#f2f7f2',
-        display: 'standalone',
-        orientation: 'portrait-primary',
-        start_url: '/',
-        scope: '/',
-        lang: 'ru',
-        categories: ['health', 'fitness', 'lifestyle'],
+        name: 'Eye Gym — упражнения для глаз', short_name: 'Eye Gym',
+        description: 'Короткие комплексы упражнений для расслабления глаз.', theme_color: '#083f3b', background_color: '#f2f7f2',
+        display: 'standalone', orientation: 'portrait-primary', start_url: '/', scope: '/', lang: 'ru', categories: ['health', 'fitness', 'lifestyle'],
         icons: [
           {src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any'},
           {src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any'},
@@ -33,17 +25,10 @@ export default defineConfig({
         importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2,json}'],
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/(?:ru|en|ro)\/(?:learn|for)(?:\/|$)/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
-          {
-            urlPattern: ({url}) => url.pathname.startsWith('/audio/'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'eye-gym-audio-v1',
-              expiration: {maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365},
-              cacheableResponse: {statuses: [0, 200]},
-            },
-          },
+          {urlPattern: ({url}) => url.pathname.startsWith('/audio/'), handler: 'CacheFirst', options: {cacheName: 'eye-gym-audio-v1', expiration: {maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365}, cacheableResponse: {statuses: [0, 200]}}},
           {urlPattern: ({url}) => url.pathname.startsWith('/api/'), handler: 'NetworkOnly'},
         ],
       },
@@ -52,8 +37,5 @@ export default defineConfig({
   ],
   base: '/',
   resolve: {alias: {'@': path.resolve(__dirname, '.')}},
-  server: {
-    hmr: process.env.DISABLE_HMR !== 'true',
-    proxy: {'/api': {target: 'http://127.0.0.1:8080', changeOrigin: false}},
-  },
+  server: {hmr: process.env.DISABLE_HMR !== 'true', proxy: {'/api': {target: 'http://127.0.0.1:8080', changeOrigin: false}}},
 });

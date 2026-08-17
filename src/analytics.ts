@@ -1,33 +1,11 @@
 import type {UserSettings} from './types';
 
-declare global {
-  interface Window {
-    dataLayer?: unknown[][];
-    gtag?: (...args: unknown[]) => void;
-    [key: `ga-disable-${string}`]: boolean | undefined;
-  }
-}
-
+declare global { interface Window { dataLayer?: unknown[][]; gtag?: (...args: unknown[]) => void; [key: `ga-disable-${string}`]: boolean | undefined; } }
 const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined;
 let initialized = false;
-
-export function configureAnalytics(consent: UserSettings['analyticsConsent']): void {
-  if (!measurementId) return;
-  window[`ga-disable-${measurementId}`] = consent !== 'granted';
-  if (consent !== 'granted' || initialized) return;
-  window.dataLayer = window.dataLayer ?? [];
-  window.gtag = (...args: unknown[]) => window.dataLayer!.push(args);
-  window.gtag('js', new Date());
-  window.gtag('config', measurementId, {anonymize_ip: true, allow_google_signals: false, allow_ad_personalization_signals: false, send_page_view: true});
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
-  script.dataset.eyeGymAnalytics = 'true';
-  document.head.append(script);
-  initialized = true;
-}
-
-export function track(event: string, parameters: Record<string, string | number | boolean> = {}): void {
-  if (!initialized || !measurementId || window[`ga-disable-${measurementId}`]) return;
-  window.gtag?.('event', event, parameters);
-}
+const attributionKey='eye_gym_attribution_v1';
+export type Attribution={source?:string;medium?:string;campaign?:string;content?:string;term?:string;landing:string};
+export function captureAttribution():Attribution { const p=new URLSearchParams(location.search); const fresh:Attribution={source:p.get('utm_source')??undefined,medium:p.get('utm_medium')??undefined,campaign:p.get('utm_campaign')??undefined,content:p.get('utm_content')??undefined,term:p.get('utm_term')??undefined,landing:location.pathname}; try {const old=JSON.parse(localStorage.getItem(attributionKey)??'null') as Attribution|null; const value=(fresh.source||fresh.medium||fresh.campaign)?fresh:(old??fresh); localStorage.setItem(attributionKey,JSON.stringify(value)); return value;} catch{return fresh;} }
+export function configureAnalytics(consent: UserSettings['analyticsConsent']): void { if(!measurementId)return; window[`ga-disable-${measurementId}`]=consent!=='granted'; if(consent!=='granted'||initialized)return; window.dataLayer=window.dataLayer??[]; window.gtag=(...args:unknown[])=>window.dataLayer!.push(args); window.gtag('js',new Date()); window.gtag('config',measurementId,{anonymize_ip:true,allow_google_signals:false,allow_ad_personalization_signals:false,send_page_view:true}); const script=document.createElement('script');script.async=true;script.src=`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;script.dataset.eyeGymAnalytics='true';document.head.append(script);initialized=true; }
+export function track(event:string,parameters:Record<string,string|number|boolean>={}):void {if(!initialized||!measurementId||window[`ga-disable-${measurementId}`])return;window.gtag?.('event',event,parameters);}
+export function trackWithAttribution(event:string,parameters:Record<string,string|number|boolean>={}):void {const a=captureAttribution();track(event,{...parameters,...(a.source?{source:a.source}:{}),...(a.medium?{medium:a.medium}:{}),...(a.campaign?{campaign:a.campaign}:{}),landing:a.landing});}
