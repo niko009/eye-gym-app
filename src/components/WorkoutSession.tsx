@@ -8,11 +8,13 @@ import {getMessages} from '../i18n';
 import {useTelegram} from '../hooks/useTelegram';
 import type {Complex, UserSettings, WorkoutPlan, WorkoutRecord} from '../types';
 import ExerciseAnimation from './ExerciseAnimation';
+import {WorkoutRewardSummary} from './Gamification';
 
 interface Props {
   plan: WorkoutPlan;
   complex: Complex;
   settings: UserSettings;
+  previousRecords: readonly WorkoutRecord[];
   onComplete: (record: WorkoutRecord) => void;
   onExit: () => void;
 }
@@ -20,7 +22,7 @@ interface Props {
 type Phase = 'exercise' | 'rest' | 'finished';
 interface WorkoutState {index: number; phase: Phase; remainingMs: number; paused: boolean}
 
-export default function WorkoutSession({plan, complex, settings, onComplete, onExit}: Props) {
+export default function WorkoutSession({plan, complex, settings, previousRecords, onComplete, onExit}: Props) {
   const t = getMessages(settings.language);
   const {webApp, hapticFeedback} = useTelegram();
   const initialExercise = EXERCISE_BY_ID.get(plan.exerciseIds[0])!;
@@ -111,6 +113,7 @@ export default function WorkoutSession({plan, complex, settings, onComplete, onE
           <p className="eyebrow">{localize(complex.name, settings.language)}</p>
           <h2 className="mt-2 text-4xl font-black tracking-tight">{t.finished}</h2>
           <p className="mx-auto mt-4 max-w-sm leading-7 text-tg-hint">{t.finishedDescription(localize(complex.name, settings.language))}</p>
+          <WorkoutRewardSummary plan={plan} previousRecords={previousRecords} language={settings.language} />
           <button type="button" onClick={() => onComplete(completeWorkout(plan))} className="primary-button mt-9 w-full">{t.backHome}</button>
         </div>
       </motion.div>

@@ -1,9 +1,11 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
-import {ArrowLeft, CalendarDays, Check, Clock3, Flame, History, Lock, Medal, Share2, Star, Trophy} from 'lucide-react';
+import {ArrowLeft, CalendarDays, Clock3, Flame, History, Lock, Medal, Share2, Star, Trophy} from 'lucide-react';
 import {COMPLEX_BY_ID, localize} from '../data';
+import {calculateGameProgress, getBadgeUnlocks} from '../domain/rewards';
 import {getMessages} from '../i18n';
 import type {UserSettings, UserStats, WorkoutRecord} from '../types';
+import {getLevelName} from './Gamification';
 
 interface Props {records: WorkoutRecord[]; stats: UserStats; settings: UserSettings; onClose: () => void}
 type Period = 'days' | 'weeks' | 'months';
@@ -15,12 +17,15 @@ export default function StatsView({records, stats, settings, onClose}: Props) {
   const favorite = stats.favoriteComplexId ? COMPLEX_BY_ID.get(stats.favoriteComplexId) : null;
   const chart = buildChart(records, period, settings.language);
   const maximum = Math.max(1, ...chart.map((point) => point.value));
+  const gameProgress = calculateGameProgress(records);
+  const badgeUnlocks = getBadgeUnlocks(stats);
   const achievements = [
-    {name: t.firstSession, unlocked: stats.completedWorkouts >= 1},
-    {name: t.threeDayStreak, unlocked: stats.bestStreak >= 3},
-    {name: t.halfHour, unlocked: stats.totalTimeSeconds >= 30 * 60},
-    {name: t.explorer, unlocked: Object.keys(stats.complexCounts).length >= 3},
-    {name: t.tenSessions, unlocked: stats.completedWorkouts >= 10},
+    {name: t.firstSession, unlocked: badgeUnlocks['first-step'], symbol: '🌱', color: 'from-emerald-400 to-teal-600'},
+    {name: t.threeDayStreak, unlocked: badgeUnlocks['three-days'], symbol: '🔥', color: 'from-orange-300 to-orange-600'},
+    {name: t.halfHour, unlocked: badgeUnlocks['half-hour'], symbol: '⏳', color: 'from-sky-300 to-blue-600'},
+    {name: t.explorer, unlocked: badgeUnlocks['three-routes'], symbol: '🧭', color: 'from-amber-300 to-amber-600'},
+    {name: t.tenSessions, unlocked: badgeUnlocks['ten-sessions'], symbol: '🏆', color: 'from-violet-300 to-violet-600'},
+    {name: t.badgeAllRoutes, unlocked: badgeUnlocks['all-routes'], symbol: '🌈', color: 'from-pink-300 to-rose-500'},
   ];
 
   const shareProgress = async () => {
@@ -75,13 +80,17 @@ export default function StatsView({records, stats, settings, onClose}: Props) {
 
         <section className="surface-card p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div><p className="eyebrow"><Medal className="mr-1 inline" size={14} />{t.achievements}</p><h2 className="mt-1 text-xl font-black">{achievements.filter((item) => item.unlocked).length} / {achievements.length}</h2></div>
+            <div><p className="eyebrow"><Medal className="mr-1 inline" size={14} />{t.gameCollectionTitle}</p><h2 className="mt-1 text-xl font-black">{achievements.filter((item) => item.unlocked).length} / {achievements.length}</h2><p className="mt-1 max-w-lg text-sm font-semibold leading-5 text-tg-hint">{t.gameCollectionBody}</p></div>
             <button type="button" onClick={() => void shareProgress()} className="secondary-button inline-flex items-center justify-center gap-2 text-sm"><Share2 size={17} />{shareStatus === 'copied' ? t.shared : t.shareProgress}</button>
           </div>
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-5 grid gap-3 rounded-[1.5rem] bg-[#073f3b] p-4 text-white sm:grid-cols-[1fr_auto] sm:items-center">
+            <div><p className="text-xs font-black uppercase tracking-widest text-amber-200">{t.gameLevel} {gameProgress.levelNumber}</p><p className="mt-1 text-xl font-black">{getLevelName(gameProgress.level, t)}</p></div>
+            <p className="inline-flex items-center gap-2 text-2xl font-black text-amber-200"><Star size={23} fill="currentColor" />{gameProgress.stars} <span className="text-sm">{t.gameStars}</span></p>
+          </div>
+          <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {achievements.map((item) => (
-              <li key={item.name} className={`rounded-2xl border p-4 ${item.unlocked ? 'border-emerald-500/25 bg-emerald-500/8' : 'border-[var(--line)] bg-slate-500/5 opacity-70'}`}>
-                <div className={`mb-3 grid size-9 place-items-center rounded-xl ${item.unlocked ? 'bg-emerald-600 text-white' : 'bg-slate-500/10 text-tg-hint'}`}>{item.unlocked ? <Check size={17} /> : <Lock size={16} />}</div>
+              <li key={item.name} className={`rounded-2xl border p-4 ${item.unlocked ? 'border-amber-500/25 bg-amber-500/7' : 'border-[var(--line)] bg-slate-500/5 opacity-65'}`}>
+                <div className={`mb-3 grid size-11 place-items-center rounded-2xl text-xl ${item.unlocked ? `bg-gradient-to-br ${item.color} text-white shadow-md` : 'bg-slate-500/10 text-tg-hint'}`}>{item.unlocked ? <span aria-hidden="true">{item.symbol}</span> : <Lock size={16} />}</div>
                 <p className="text-sm font-black leading-5">{item.name}</p><p className="mt-1 text-[10px] font-black uppercase tracking-wider text-tg-hint">{item.unlocked ? t.unlocked : t.locked}</p>
               </li>
             ))}

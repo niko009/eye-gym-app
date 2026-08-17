@@ -251,6 +251,7 @@ export default function App() {
               publicConfig={publicConfig}
               syncing={syncing}
               stats={stats}
+              records={records}
               settings={settings}
               breakTimer={breakTimer}
               onRetryHistory={() => void loadHistory()}
@@ -290,6 +291,7 @@ export default function App() {
             plan={activePlan}
             complex={activeComplex}
             settings={settings}
+            previousRecords={records}
             onComplete={(record) => void finishWorkout(record)}
             onExit={() => {track('workout_exited', {complex_id: activePlan.complexId}); setActivePlan(null)}}
           />

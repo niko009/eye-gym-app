@@ -7,8 +7,9 @@ import {useOnlineStatus} from '../hooks/useOnlineStatus';
 import {useTelegram} from '../hooks/useTelegram';
 import type {PublicConfig} from '../api/types';
 import {BreakTimerCard} from './BreakTimer';
+import {GameProgressCard} from './Gamification';
 import type {BreakTimerController} from '../hooks/useBreakTimer';
-import type {Complex, SessionState, UserSettings, UserStats} from '../types';
+import type {Complex, SessionState, UserSettings, UserStats, WorkoutRecord} from '../types';
 
 interface Props {
   historyStatus: 'loading' | 'ready' | 'error';
@@ -16,6 +17,7 @@ interface Props {
   publicConfig: PublicConfig;
   syncing: boolean;
   stats: UserStats;
+  records: WorkoutRecord[];
   settings: UserSettings;
   breakTimer: BreakTimerController;
   onRetryHistory: () => void;
@@ -34,7 +36,7 @@ const iconByComplex = {
   'malyshev-method': Trophy,
 };
 
-export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, settings, breakTimer, onRetryHistory, onSelectComplex, onOpenStats, onOpenLearn, onOpenSettings}: Props) {
+export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, records, settings, breakTimer, onRetryHistory, onSelectComplex, onOpenStats, onOpenLearn, onOpenSettings}: Props) {
   const t = getMessages(settings.language);
   const online = useOnlineStatus();
   const {hapticFeedback, isTelegram} = useTelegram();
@@ -100,6 +102,8 @@ export default function Dashboard({historyStatus, session, publicConfig, syncing
             </button>
           </div>
         </section>
+
+        <GameProgressCard records={records} language={settings.language} onOpenCollection={onOpenStats} />
 
         <BreakTimerCard timer={breakTimer} language={settings.language} />
 

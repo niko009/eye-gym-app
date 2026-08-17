@@ -27,6 +27,21 @@ Eye Gym presents the timer as a screen-break habit, not treatment. The [AAO-revi
 - Compact evidence-based workspace checklist covering distance, height, glare, blinking and short breaks.
 - RU/RO/EN interface and accessible controls consistent with the existing application.
 
+## Child-safe gamification review
+
+Reviewed: 2026-08-17.
+
+The reward system follows UNICEF RITEC's wellbeing-by-design principles: it supports achievement, autonomy and positive play without turning screen time into an endless loop. AmblyoPlay's visible gems, milestones and collectible progress informed the child-friendly presentation, while the ICO Children's Code informed the decision to avoid pressure-based nudges.
+
+Implemented:
+
+- Care stars calculated from completed workout history, so progress remains deterministic and syncs through the existing account model.
+- Five explorer levels, six permanent badges, a gentle daily mission and bonuses for trying a new routine.
+- A clear reward summary after each completed workout.
+- No lost progress, paid rewards, random loot, leaderboards, countdown pressure or punishment for missed days.
+
+Sources: [UNICEF RITEC](https://www.unicef.org/innovation/responsible-innovation-technology-children-ritec), [RITEC Design Toolbox](https://www.unicef.org/childrightsandbusiness/workstreams/responsible-technology/online-gaming/ritec-design-toolbox), [ICO Children's Code: nudge techniques](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/childrens-information/childrens-code-guidance-and-resources/age-appropriate-design-a-code-of-practice-for-online-services/13-nudge-techniques/), [AmblyoPlay engagement](https://www.amblyoplay.com/engaging-vision-therapy/).
+
 ## Deliberately not copied
 
 - Camera-based blink or distance detection: unnecessary privacy and permission cost for the current product.

@@ -62,5 +62,6 @@ The Telegram client is another delivery channel for this project, not a separate
 Product requirements are in [`docs/WEB_PWA_SPEC.md`](docs/WEB_PWA_SPEC.md). Architecture decisions are in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 The current comparison with similar break and eye-relaxation products is in [`docs/COMPETITOR_REVIEW.md`](docs/COMPETITOR_REVIEW.md).
 The app also includes a child-friendly illustrated learning section about how eyes work, screen-related discomfort and gentle breaks in RU/RO/EN.
+Gamification is derived from completed workout history: children collect care stars, explorer levels and permanent badges without losing progress for missed days.
 Production setup, backup, restore, rollback and Telegram verification are documented in [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 The current implementation and remaining production inputs are tracked in [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).
