@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "dev": "node scripts/generate-seo.mjs && vite --port=3000 --host=0.0.0.0",
+    "seo:generate": "node scripts/generate-seo.mjs",
+    "build": "node scripts/generate-seo.mjs && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
@@ -37,9 +38,5 @@
     "vite-plugin-pwa": "^1.0.3",
     "vitest": "^4.1.6"
   },
-  "overrides": {
-    "tsx": {
-      "esbuild": "^0.28.1"
-    }
-  }
+  "overrides": {"tsx": {"esbuild": "^0.28.1"}}
 }
