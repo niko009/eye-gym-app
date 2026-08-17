@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {lazy, Suspense, useEffect, useRef, useState} from 'react';
 import {AnimatePresence, MotionConfig, motion} from 'motion/react';
 import Dashboard from './components/Dashboard';
 import ConsentBanner from './components/ConsentBanner';
@@ -20,11 +20,13 @@ import type {PublicConfig} from './api/types';
 import {getTelegramWebApp} from './platform/telegram';
 import {configureReminders} from './push';
 import {useBreakTimer} from './hooks/useBreakTimer';
+import {getMessages} from './i18n';
 import {clearWorkouts, listWorkouts, saveWorkout, subscribeToWorkoutChanges} from './storage/database';
 import {defaultSettings, getSettings, resetSettings, saveSettings} from './storage/settings';
 import type {Complex, SessionState, UserSettings, WorkoutPlan, WorkoutRecord} from './types';
 
-type View = 'dashboard' | 'stats' | 'settings';
+type View = 'dashboard' | 'stats' | 'settings' | 'learn';
+const LearnView = lazy(() => import('./components/LearnView'));
 
 export default function App() {
   const [view, setView] = useState<View>('dashboard');
@@ -40,6 +42,10 @@ export default function App() {
   const breakTimer = useBreakTimer(settings.language);
   const trackedUserId = useRef<string | null>(null);
   const trackedLaunch = useRef(false);
+
+  useEffect(() => {
+    window.scrollTo({top: 0, behavior: 'auto'});
+  }, [view]);
 
   const loadHistory = async () => {
     try {
@@ -250,6 +256,7 @@ export default function App() {
               onRetryHistory={() => void loadHistory()}
               onSelectComplex={requestWorkout}
               onOpenStats={() => setView('stats')}
+              onOpenLearn={() => setView('learn')}
               onOpenSettings={() => setView('settings')}
             />
           </motion.div>
@@ -270,6 +277,13 @@ export default function App() {
         <BreakOverlay timer={breakTimer} language={settings.language} suppressed={Boolean(activePlan || pendingComplex)} />
         {pendingComplex && !activePlan && (
           <MedicalNotice language={settings.language} onAccept={acceptMedicalNotice} onCancel={() => setPendingComplex(null)} />
+        )}
+        {view === 'learn' && (
+          <motion.div key="learn" initial={{opacity: 0, x: 40}} animate={{opacity: 1, x: 0}} exit={{opacity: 0, x: 40}}>
+            <Suspense fallback={<div role="status" className="grid min-h-[70dvh] place-items-center font-black text-tg-hint">{getMessages(settings.language).loading}</div>}>
+              <LearnView language={settings.language} onClose={() => setView('dashboard')} />
+            </Suspense>
+          </motion.div>
         )}
         {activePlan && activeComplex && (
           <WorkoutSession

@@ -1,4 +1,4 @@
-import {Activity, BarChart3, Cloud, Clock3, Coffee, Flame, LoaderCircle, LogIn, Play, Settings, Sparkles, Target, Trophy, WifiOff, Zap} from 'lucide-react';
+import {Activity, ArrowRight, BarChart3, BookOpen, Cloud, Clock3, Coffee, Eye, Flame, LoaderCircle, LogIn, Play, Settings, Sparkles, Sun, Target, Trophy, WifiOff, Zap} from 'lucide-react';
 import {motion} from 'motion/react';
 import type {ReactNode} from 'react';
 import {COMPLEXES, localize} from '../data';
@@ -21,6 +21,7 @@ interface Props {
   onRetryHistory: () => void;
   onSelectComplex: (complex: Complex) => void;
   onOpenStats: () => void;
+  onOpenLearn: () => void;
   onOpenSettings: () => void;
 }
 
@@ -33,7 +34,7 @@ const iconByComplex = {
   'malyshev-method': Trophy,
 };
 
-export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, settings, breakTimer, onRetryHistory, onSelectComplex, onOpenStats, onOpenSettings}: Props) {
+export default function Dashboard({historyStatus, session, publicConfig, syncing, stats, settings, breakTimer, onRetryHistory, onSelectComplex, onOpenStats, onOpenLearn, onOpenSettings}: Props) {
   const t = getMessages(settings.language);
   const online = useOnlineStatus();
   const {hapticFeedback, isTelegram} = useTelegram();
@@ -101,6 +102,22 @@ export default function Dashboard({historyStatus, session, publicConfig, syncing
         </section>
 
         <BreakTimerCard timer={breakTimer} language={settings.language} />
+
+        <button type="button" onClick={onOpenLearn} className="group relative mb-7 w-full overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-tg-secondary-bg to-amber-500/10 p-5 text-left shadow-[0_18px_50px_-38px_rgba(7,77,67,.7)] sm:p-6">
+          <span aria-hidden="true" className="absolute -right-10 -top-12 size-40 rounded-full border-[22px] border-sky-500/10 transition duration-500 group-hover:scale-110" />
+          <span className="relative flex items-center gap-4">
+            <span className="relative grid size-16 shrink-0 place-items-center rounded-[1.4rem] bg-sky-600 text-white shadow-lg shadow-sky-900/15">
+              <Eye size={27} />
+              <Sun size={14} className="absolute -right-1 -top-1 text-amber-300" fill="currentColor" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="mb-1 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[.16em] text-sky-700 dark:text-sky-300"><BookOpen size={13} />{t.learnPreviewEyebrow}</span>
+              <span className="block text-lg font-black leading-tight">{t.learnPreviewTitle}</span>
+              <span className="mt-1 block text-sm font-semibold leading-5 text-tg-hint">{t.learnPreviewBody}</span>
+            </span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-tg-bg text-sky-700 shadow-sm transition group-hover:translate-x-1 dark:text-sky-300"><ArrowRight size={18} /></span>
+          </span>
+        </button>
 
         {historyStatus !== 'error' && stats.completedWorkouts === 0 && (
           <section className="mb-7 rounded-[1.75rem] border border-dashed border-emerald-500/30 bg-emerald-500/5 p-5">

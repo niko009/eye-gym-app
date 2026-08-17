@@ -13,6 +13,7 @@ Last reviewed: 2026-08-16.
 - Secure opaque cookie sessions, same-origin mutation checks, authentication rate limiting and redacted auth payload logging.
 - Multiple daily reminders, IANA time zones, VAPID Web Push, Telegram bot delivery and native Telegram write-access consent.
 - Persistent 20–20–20 screen-break timer with configurable cadence, background-safe absolute deadlines, full-screen distance prompts, snooze, notifications and a daily break count.
+- Child-friendly RU/RO/EN learning section with original illustrations explaining basic eye anatomy, screen-related discomfort and calm screen breaks, linked to NEI and AAO-reviewed sources.
 - PWA app shell, update prompt, custom install guidance including iOS Safari, offline browser validation and production PNG/SVG icons.
 - Versioned neural RU/RO/EN audio packs for all sixteen exercises plus rest/completion cues, automatic selected-language download, optional pack controls and generated-duration validation.
 - Opt-in GA4, independent consent per profile, multilingual privacy policy and medical disclaimer.
@@ -20,7 +21,7 @@ Last reviewed: 2026-08-16.
 
 ## Automated verification
 
-- Frontend: TypeScript, production Vite/PWA build and 24 Vitest tests.
+- Frontend: TypeScript, production Vite/PWA build and 26 Vitest tests.
 - Backend: TypeScript build and 8 Vitest tests.
 - Browser: mobile/desktop UI walkthrough plus successful reload with the browser network disabled after Service Worker installation.
 - Infrastructure: `docker compose config --quiet` and zero known npm audit vulnerabilities in frontend and backend dependency trees.
