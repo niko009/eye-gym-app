@@ -2,15 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [web-pwa]
+    branches: [001-eye-gym-web-app]
   pull_request:
 
 permissions:
   contents: read
 
+concurrency:
+  group: eye-gym-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
