@@ -32,7 +32,9 @@ def configure(config: dict[str, Any], domain: str, upstream: str) -> dict[str, A
                             "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
                         ],
                         "Referrer-Policy": ["strict-origin-when-cross-origin"],
-                        "Permissions-Policy": ["camera=(), microphone=(), geolocation=()"],
+                        "Permissions-Policy": [
+                            "camera=(), microphone=(), geolocation=(), screen-wake-lock=(self)"
+                        ],
                     }
                 },
             }

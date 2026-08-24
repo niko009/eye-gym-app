@@ -5,6 +5,7 @@ import {pauseVoice, speakCue, speakExercise, stopVoice} from '../audio/voice';
 import {EXERCISE_BY_ID, localize} from '../data';
 import {completeWorkout, REST_SECONDS} from '../domain/workouts';
 import {getMessages} from '../i18n';
+import {useScreenWakeLock} from '../hooks/useScreenWakeLock';
 import {useTelegram} from '../hooks/useTelegram';
 import type {Complex, UserSettings, WorkoutPlan, WorkoutRecord} from '../types';
 import ExerciseAnimation from './ExerciseAnimation';
@@ -25,6 +26,7 @@ interface WorkoutState {index: number; phase: Phase; remainingMs: number; paused
 export default function WorkoutSession({plan, complex, settings, previousRecords, onComplete, onExit}: Props) {
   const t = getMessages(settings.language);
   const {webApp, hapticFeedback} = useTelegram();
+  useScreenWakeLock(true);
   const initialExercise = EXERCISE_BY_ID.get(plan.exerciseIds[0])!;
   const [state, setState] = useState<WorkoutState>({index: 0, phase: 'exercise', remainingMs: initialExercise.durationSeconds * 1000, paused: false});
   const [showExit, setShowExit] = useState(false);

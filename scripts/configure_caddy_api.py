@@ -38,7 +38,7 @@ def shared_block(domain: str, upstream: str) -> str:
     X-Content-Type-Options "nosniff"
     Content-Security-Policy "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
     Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), screen-wake-lock=(self)"
   }}
   # END EYE GYM MANAGED ROUTES
 """
@@ -65,7 +65,7 @@ def site_block(upstream: str) -> str:
     X-Content-Type-Options "nosniff"
     Content-Security-Policy "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
     Referrer-Policy "strict-origin-when-cross-origin"
-    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), screen-wake-lock=(self)"
   }}
   # END EYE GYM MANAGED ROUTES
 """

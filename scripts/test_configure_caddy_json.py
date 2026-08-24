@@ -5,6 +5,7 @@ import unittest
 from configure_caddy_json import (
     API_ROUTE_ID,
     FRESH_CACHE_ROUTE_ID,
+    HEADER_ROUTE_ID,
     IMMUTABLE_CACHE_ROUTE_ID,
     REDIRECT_ROUTE_ID,
     configure,
@@ -27,6 +28,9 @@ class ConfigureCaddyJsonTest(unittest.TestCase):
         redirect = next(route for route in routes if route.get("@id") == REDIRECT_ROUTE_ID)
         self.assertEqual(redirect["match"][0]["header"]["X-Forwarded-Proto"], ["http"])
         self.assertEqual(redirect["handle"][0]["status_code"], 308)
+        headers = next(route for route in routes if route.get("@id") == HEADER_ROUTE_ID)
+        permissions = headers["handle"][0]["response"]["set"]["Permissions-Policy"]
+        self.assertEqual(permissions, ["camera=(), microphone=(), geolocation=(), screen-wake-lock=(self)"])
 
 
 if __name__ == "__main__":

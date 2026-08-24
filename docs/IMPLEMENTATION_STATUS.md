@@ -1,6 +1,6 @@
 # Implementation status
 
-Last reviewed: 2026-08-16.
+Last reviewed: 2026-08-24.
 
 ## Completed
 
@@ -13,6 +13,7 @@ Last reviewed: 2026-08-16.
 - Secure opaque cookie sessions, same-origin mutation checks, authentication rate limiting and redacted auth payload logging.
 - Multiple daily reminders, IANA time zones, VAPID Web Push, Telegram bot delivery and native Telegram write-access consent.
 - Persistent 20–20–20 screen-break timer with configurable cadence, background-safe absolute deadlines, full-screen distance prompts, snooze, notifications and a daily break count.
+- Screen Wake Lock during an active workout, with automatic release on exit and reacquisition after returning to the visible app when supported by the browser.
 - Child-friendly RU/RO/EN learning section with original illustrations explaining basic eye anatomy, screen-related discomfort and calm screen breaks, linked to NEI and AAO-reviewed sources.
 - Child-safe gamification derived from synchronized workout history: care stars, five explorer levels, a non-punitive daily mission, permanent badge collection and an animated completion reward with new-route and milestone bonuses.
 - PWA app shell, update prompt, custom install guidance including iOS Safari, offline browser validation and production PNG/SVG icons.
