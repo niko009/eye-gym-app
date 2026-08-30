@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {track} from '../analytics';
 import type {Language} from '../types';
 
@@ -8,8 +8,20 @@ const copy: Record<Language, {maker: string; more: string; text: string; cta: st
   en: {maker: 'A Bacus project', more: 'More from Bacus', text: 'Motion Play turns body movement into game controls using your phone camera.', cta: 'Open Motion Play'},
 };
 
-export default function BacusNetwork({language}: {language: Language}) {
+function currentLanguage(): Language {
+  const value = document.documentElement.lang;
+  return value === 'ro' || value === 'en' ? value : 'ru';
+}
+
+export default function BacusNetwork() {
+  const [language, setLanguage] = useState<Language>(() => currentLanguage());
   const t = copy[language];
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => setLanguage(currentLanguage()));
+    observer.observe(document.documentElement, {attributes: true, attributeFilter: ['lang']});
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     track('bacus_promo_impression', {source_product: 'eye-gym', target_product: 'motion-play', placement: 'app_footer', locale: language});
