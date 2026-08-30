@@ -2,6 +2,7 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import '@fontsource-variable/nunito';
 import App from './App.tsx';
+import BacusNetwork from './components/BacusNetwork.tsx';
 import {initializeTelegram} from './platform/telegram.ts';
 import './index.css';
 
@@ -11,6 +12,7 @@ async function bootstrap() {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
+      <BacusNetwork />
     </StrictMode>,
   );
 }
