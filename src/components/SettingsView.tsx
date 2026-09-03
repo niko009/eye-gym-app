@@ -8,6 +8,7 @@ import {getMessages} from '../i18n';
 import {getTelegramWebApp} from '../platform/telegram';
 import type {Language, MotionPreference, SessionState, TextSizePreference, ThemePreference, UserSettings} from '../types';
 import AudioPackSettings from './AudioPackSettings';
+import TelegramCta from './TelegramCta';
 
 interface Props {settings: UserSettings; session: SessionState; publicConfig: PublicConfig; reminderStatus: 'idle' | 'saving' | 'enabled' | 'disabled' | 'unsupported' | 'denied' | 'error'; onSessionChange: (session: SessionState) => void; onUpdate: (settings: UserSettings) => void; onClose: () => void; onReset: () => void}
 
@@ -59,6 +60,9 @@ export default function SettingsView({settings, session, publicConfig, reminderS
 
         <SettingsSection title={t.reminders} action={<button type="button" onClick={addReminder} className="inline-flex items-center gap-1 rounded-xl bg-emerald-500/10 px-3 py-2 text-xs font-black text-emerald-700 dark:text-emerald-300"><Plus size={15} />{t.addReminder}</button>}>
           <p className="px-1 pb-3 text-xs leading-5 text-tg-hint">{t.reminderHint}</p>
+          {publicConfig.telegramAuthEnabled && !getTelegramWebApp() && (
+            <div className="py-3"><TelegramCta language={settings.language} source="settings_reminders" compact /></div>
+          )}
           {reminderStatus !== 'idle' && reminderStatus !== 'disabled' && <p className={`px-1 pb-3 text-xs font-bold ${reminderStatus === 'enabled' ? 'text-emerald-600' : reminderStatus === 'saving' ? 'text-tg-hint' : 'text-orange-600'}`}>{reminderStatus === 'enabled' ? t.reminderEnabled : reminderStatus === 'saving' ? t.reminderSaving : reminderStatus === 'denied' ? t.reminderDenied : reminderStatus === 'unsupported' ? t.reminderUnsupported : t.error}</p>}
           {settings.reminders.length === 0 ? <div className="rounded-2xl border border-dashed border-[var(--line)] p-5 text-center text-sm text-tg-hint">{t.addReminder}</div> : settings.reminders.map((reminder) => (
             <div className="settings-row" key={reminder.id}>
