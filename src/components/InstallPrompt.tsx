@@ -41,7 +41,7 @@ export default function InstallPrompt({language, telegramEnabled}: {language: La
             target="_blank"
             rel="noreferrer"
             onClick={() => trackWithAttribution('telegram_cta_clicked', {source: 'install_prompt'})}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-sky-500/25 bg-sky-500/8 px-3 py-2 text-xs font-black text-sky-700 dark:text-sky-300"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-sky-500/25 bg-sky-500/10 px-3 py-2 text-xs font-black text-sky-700 dark:text-sky-300"
           ><Send size={14} />{telegram.action}</a>
         )}
         <button type="button" aria-label={t.close} onClick={close} className="p-1 text-tg-hint"><X size={18} /></button>
