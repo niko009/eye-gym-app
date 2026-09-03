@@ -8,6 +8,7 @@ import {useTelegram} from '../hooks/useTelegram';
 import type {PublicConfig} from '../api/types';
 import {BreakTimerCard} from './BreakTimer';
 import {GameProgressCard} from './Gamification';
+import TelegramCta from './TelegramCta';
 import type {BreakTimerController} from '../hooks/useBreakTimer';
 import type {Complex, SessionState, UserSettings, UserStats, WorkoutRecord} from '../types';
 
@@ -102,6 +103,10 @@ export default function Dashboard({historyStatus, session, publicConfig, syncing
             </button>
           </div>
         </section>
+
+        {publicConfig.telegramAuthEnabled && !isTelegram && (
+          <TelegramCta language={settings.language} source="dashboard" returning={stats.completedWorkouts > 0} />
+        )}
 
         <GameProgressCard records={records} language={settings.language} onOpenCollection={onOpenStats} />
 
