@@ -298,7 +298,7 @@ export default function App() {
         )}
       </AnimatePresence>
       {!activePlan && settings.analyticsConsent !== 'unknown' ? <PwaUpdatePrompt language={settings.language} /> : null}
-      {!activePlan && settings.analyticsConsent !== 'unknown' ? <InstallPrompt language={settings.language} /> : null}
+      {!activePlan && settings.analyticsConsent !== 'unknown' ? <InstallPrompt language={settings.language} telegramEnabled={publicConfig.telegramAuthEnabled} /> : null}
       <ConsentBanner settings={settings} onUpdate={updateSettings} />
     </div>
     </MotionConfig>
