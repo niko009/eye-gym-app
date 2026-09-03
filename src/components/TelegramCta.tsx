@@ -22,9 +22,9 @@ export default function TelegramCta({language, source, compact = false, returnin
         target="_blank"
         rel="noreferrer"
         onClick={trackClick}
-        className="flex items-center gap-3 rounded-2xl border border-sky-500/20 bg-sky-500/7 p-4 text-left transition hover:border-sky-500/35 hover:bg-sky-500/10"
+        className="flex items-center gap-3 rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4 text-left transition hover:border-sky-500/35 hover:bg-sky-500/10"
       >
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-500/12 text-sky-600 dark:text-sky-300"><Send size={18} /></span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-300"><Send size={18} /></span>
         <span className="min-w-0 flex-1">
           <strong className="block text-sm font-black">{copy.compactTitle}</strong>
           <span className="mt-0.5 block text-xs leading-5 text-tg-hint">{copy.compactBody}</span>
@@ -35,7 +35,7 @@ export default function TelegramCta({language, source, compact = false, returnin
   }
 
   return (
-    <section className="relative mb-7 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500/12 via-tg-secondary-bg to-emerald-500/8 p-5 shadow-[0_18px_50px_-38px_rgba(7,77,67,.7)] sm:p-6">
+    <section className="relative mb-7 overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-tg-secondary-bg to-emerald-500/10 p-5 shadow-[0_18px_50px_-38px_rgba(7,77,67,.7)] sm:p-6">
       <span aria-hidden="true" className="absolute -right-10 -top-12 size-40 rounded-full border-[22px] border-sky-500/10" />
       <div className="relative grid items-center gap-4 sm:grid-cols-[1fr_auto]">
         <div>
